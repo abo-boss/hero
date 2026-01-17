@@ -1,0 +1,16 @@
+[
+  {
+    "title": "<strong>Deep Dive into LLMs like ChatGPT</strong>",
+    "description": "The best introduction into LLMs on the Internet",
+    "channel": "Andrej Karpathy",
+    "tags": "Fundamentals",
+    "url": "https://www.youtube.com/watch?v=7xTGNNLPyMI"
+  },
+  {
+    "title": "<strong>How I use LLMs</strong>",
+    "description": "Beginner-friendly guide to using LLMs",
+    "channel": "Andrej Karpathy",
+    "tags": "Fundamentals, Practical tutorial",
+    "url": "https://www.youtube.com/watch?v=EWvNQjAaOHw"
+  }
+]

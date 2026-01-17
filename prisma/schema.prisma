@@ -1,0 +1,64 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  content     String
+  date        DateTime @default(now())
+  
+  // Categorization
+  type        String   // 'blog' | 'resource'
+  resourceType String? // 'video', 'article', 'tool' (only for type='resource')
+  category    String   // 'ai', 'content-creation', etc.
+  tags        String   // Stored as comma-separated string for SQLite compatibility
+  link        String?  // External link for resources
+  coverImage  String?  // URL to the cover image or logo
+  duration    String?  // Video duration (e.g. "12:34")
+  
+  author      String?
+  published   Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PageContent {
+  id        String   @id @default(cuid())
+  page      String   // e.g., 'home', 'about', 'footer'
+  section   String   // e.g., 'hero', 'intro', 'contact'
+  key       String   // e.g., 'title', 'subtitle', 'email'
+  value     String
+  type      String   @default("text") // 'text', 'image', 'markdown'
+  
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, section, key])
+}
+
+model TagPreset {
+  id        String   @id @default(cuid())
+  key       String   @unique // e.g. 'resource:ai:video', 'blog:default'
+  tags      String   // JSON string or comma separated
+  updatedAt DateTime @updatedAt
+}
