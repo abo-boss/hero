@@ -1,8 +1,9 @@
 {
   "/page": "app/page.js",
+  "/about/page": "app/about/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/resources/page": "app/resources/page.js",
-  "/admin/resources/[category]/[resourceType]/page": "app/admin/resources/[category]/[resourceType]/page.js",
-  "/admin/pages/page": "app/admin/pages/page.js",
   "/admin/settings/account/page": "app/admin/settings/account/page.js",
-  "/admin/page": "app/admin/page.js"
+  "/admin/page": "app/admin/page.js",
+  "/admin/pages/page": "app/admin/pages/page.js"
 }
