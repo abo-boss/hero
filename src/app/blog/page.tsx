@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 import { getAllPosts } from '@/lib/mdx'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'

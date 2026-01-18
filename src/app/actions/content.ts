@@ -56,21 +56,33 @@ function handlePostRedirect(type: string, category: string, resourceType: string
 }
 
 export async function getPosts() {
-  return await prisma.post.findMany({
-    orderBy: { date: 'desc' }
-  })
+  try {
+    return await prisma.post.findMany({
+      orderBy: { date: 'desc' }
+    })
+  } catch (e) {
+    return []
+  }
 }
 
 export async function getPost(id: string) {
-  return await prisma.post.findUnique({
-    where: { id }
-  })
+  try {
+    return await prisma.post.findUnique({
+      where: { id }
+    })
+  } catch (e) {
+    return null
+  }
 }
 
 export async function getPostBySlug(slug: string) {
-  return await prisma.post.findUnique({
-    where: { slug }
-  })
+  try {
+    return await prisma.post.findUnique({
+      where: { slug }
+    })
+  } catch (e) {
+    return null
+  }
 }
 
 export async function createPost(formData: FormData) {

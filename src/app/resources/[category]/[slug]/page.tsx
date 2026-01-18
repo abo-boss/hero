@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 import { getPostBySlug, ResourceType } from '@/lib/mdx'
 import { MDXContent } from '@/components/MDXContent'
 import { Navbar } from '@/components/Navbar'
@@ -18,6 +19,9 @@ export default async function ResourcePage({ params }: { params: { category: str
     }
 
     const post = await getPostBySlug(params.slug)
+    if (!post) {
+      notFound()
+    }
     const mdxSource = await serialize(post.content)
 
     return (

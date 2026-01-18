@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 import { NextResponse } from 'next/server'
 import { parse } from 'node-html-parser'
 import he from 'he'

@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { Mail, BookOpen, Target, Sparkles, Zap, ArrowUpRight } from 'lucide-react'
@@ -12,9 +13,14 @@ export default async function AboutPage() {
   const description = content.find((c: any) => c.page === 'about' && c.section === 'intro' && c.key === 'description')?.value || '你好，我是阿波，一名内容创作者和 AI 爱好者。'
 
   // Get the first user (admin)
-  const user = await prisma.user.findFirst({
-    orderBy: { createdAt: 'asc' }
-  })
+  let user: any = null
+  try {
+    user = await prisma.user.findFirst({
+      orderBy: { createdAt: 'asc' }
+    })
+  } catch (e) {
+    console.error('about user fetch error:', e)
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-slate-50/50">

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { MOCK_RESOURCES, MOCK_BLOGS } from './mock-data'
 
 export type ResourceType = 'ai' | 'content-creation'
 
@@ -40,32 +41,51 @@ export async function getAllPosts(section: 'blog' | 'resources' | 'resource', su
     where.category = subType
   }
 
-  const posts = await prisma.post.findMany({
-    where,
-    orderBy: { date: 'desc' }
-  })
-
-  return posts.map(mapPrismaPost)
+  try {
+    const posts = await prisma.post.findMany({
+      where,
+      orderBy: { date: 'desc' }
+    })
+    return posts.map(mapPrismaPost)
+  } catch (e) {
+    console.error('getAllPosts error:', e)
+    // Fallback to mock data
+    if (type === 'blog') return MOCK_BLOGS
+    if (type === 'resource') {
+      if (subType) return MOCK_RESOURCES.filter(p => p.category === subType)
+      return MOCK_RESOURCES
+    }
+    return []
+  }
 }
 
 export async function getPostBySlug(slug: string) {
-  const post = await prisma.post.findUnique({
-    where: { slug }
-  })
-
-  if (!post) throw new Error(`Post not found: ${slug}`)
-
-  return mapPrismaPost(post)
+  try {
+    const post = await prisma.post.findUnique({
+      where: { slug }
+    })
+    if (!post) return null
+    return mapPrismaPost(post)
+  } catch (e) {
+    console.error('getPostBySlug error:', e)
+    // Fallback to mock data
+    const mockPost = [...MOCK_RESOURCES, ...MOCK_BLOGS].find(p => p.slug === slug)
+    return mockPost || null
+  }
 }
 
 export async function getAllResources() {
-  const posts = await prisma.post.findMany({
-    where: { 
-      type: 'resource',
-      published: true
-    },
-    orderBy: { date: 'desc' }
-  })
-
-  return posts.map(mapPrismaPost)
+  try {
+    const posts = await prisma.post.findMany({
+      where: { 
+        type: 'resource',
+        published: true
+      },
+      orderBy: { date: 'desc' }
+    })
+    return posts.map(mapPrismaPost)
+  } catch (e) {
+    console.error('getAllResources error:', e)
+    return MOCK_RESOURCES
+  }
 }
