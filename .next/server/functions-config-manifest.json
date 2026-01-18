@@ -1,0 +1,1 @@
+{"version":1,"functions":{"/api/search":{},"/about":{},"/admin/blog":{},"/admin/pages":{},"/admin":{},"/admin/content":{},"/api/auth/[...nextauth]":{},"/blog":{},"/":{},"/resources/[category]/[slug]":{},"/admin/resources/[category]/[resourceType]":{},"/resources":{}}}

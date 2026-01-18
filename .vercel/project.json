@@ -1,1 +1,16 @@
-{"neverMindDeployCard":true}
+{
+  "projectId": "prj_YSQSrsthGFA6ktpY2s8DVnmjDAkg",
+  "orgId": "team_2BTpSDouRDGkO31swqvCUqXt",
+  "projectName": "hero",
+  "settings": {
+    "createdAt": 1768654108718,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { Mail, BookOpen, Target, Sparkles, Zap, ArrowUpRight } from 'lucide-react'

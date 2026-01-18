@@ -5,8 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -31,7 +30,7 @@ model Post {
   type        String   // 'blog' | 'resource'
   resourceType String? // 'video', 'article', 'tool' (only for type='resource')
   category    String   // 'ai', 'content-creation', etc.
-  tags        String   // Stored as comma-separated string for SQLite compatibility
+  tags        String   // Stored as comma-separated string
   link        String?  // External link for resources
   coverImage  String?  // URL to the cover image or logo
   duration    String?  // Video duration (e.g. "12:34")

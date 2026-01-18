@@ -1,6 +1,11 @@
-import NextAuth from "next-auth"
-import { authOptions } from "@/lib/auth"
+export const dynamic = 'force-dynamic'
 
-const handler = NextAuth(authOptions)
+import { NextResponse } from "next/server"
 
-export { handler as GET, handler as POST }
+export async function GET() {
+  return NextResponse.json({ error: "Auth disabled" }, { status: 404 })
+}
+
+export async function POST() {
+  return NextResponse.json({ error: "Auth disabled" }, { status: 404 })
+}

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { getPosts, deletePost } from '@/app/actions/content'
 import { Plus, Edit } from 'lucide-react'

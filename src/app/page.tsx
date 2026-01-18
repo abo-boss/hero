@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { PersonalHero } from '@/components/PersonalHero'
 import { ResourceCard } from '@/components/ResourceCard'
 import { Navbar } from '@/components/Navbar'

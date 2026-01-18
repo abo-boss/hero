@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { getPageContent, updatePageContent } from '@/app/actions/page-content'
 import { Save } from 'lucide-react'
 

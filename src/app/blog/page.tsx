@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { getAllPosts } from '@/lib/mdx'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'

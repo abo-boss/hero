@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
@@ -16,20 +17,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
   }
 
-  // Use Vercel Blob for storage
-  // Note: This requires BLOB_READ_WRITE_TOKEN environment variable
-  try {
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`
-    const blob = await put(`avatars/${filename}`, file, {
-      access: 'public',
-    })
+  const bytes = await file.arrayBuffer()
+  const buffer = Buffer.from(bytes)
 
-    return NextResponse.json({ url: blob.url })
+  // Ensure upload directory exists
+  const uploadDir = join(process.cwd(), 'public/uploads/avatars')
+  try {
+    await mkdir(uploadDir, { recursive: true })
+  } catch (e) {
+    // Ignore error if directory exists
+  }
+
+  // Create unique filename
+  const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`
+  const filepath = join(uploadDir, filename)
+
+  try {
+    await writeFile(filepath, buffer)
+    const url = `/uploads/avatars/${filename}`
+    return NextResponse.json({ url })
   } catch (error) {
-    console.error('Error uploading to Vercel Blob:', error)
-    // Fallback for local development without Blob token:
-    // If you want to keep local upload working, you'd need conditional logic.
-    // But for Vercel deployment, this is the way.
-    return NextResponse.json({ error: 'Error uploading file' }, { status: 500 })
+    console.error('Error saving file:', error)
+    return NextResponse.json({ error: 'Error saving file' }, { status: 500 })
   }
 }

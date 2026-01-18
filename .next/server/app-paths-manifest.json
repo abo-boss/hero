@@ -1,9 +1,23 @@
 {
-  "/page": "app/page.js",
+  "/_not-found": "app/_not-found.js",
+  "/api/parse-url/route": "app/api/parse-url/route.js",
+  "/api/reset-admin/route": "app/api/reset-admin/route.js",
+  "/api/upload/avatar/route": "app/api/upload/avatar/route.js",
+  "/blog/[slug]/page": "app/blog/[slug]/page.js",
   "/about/page": "app/about/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/search/route": "app/api/search/route.js",
+  "/blog/page": "app/blog/page.js",
+  "/page": "app/page.js",
+  "/resources/[category]/[slug]/page": "app/resources/[category]/[slug]/page.js",
   "/resources/page": "app/resources/page.js",
+  "/admin/content/new/page": "app/admin/content/new/page.js",
+  "/admin/content/[id]/page": "app/admin/content/[id]/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
   "/admin/settings/account/page": "app/admin/settings/account/page.js",
+  "/admin/blog/page": "app/admin/blog/page.js",
+  "/admin/content/page": "app/admin/content/page.js",
+  "/admin/pages/page": "app/admin/pages/page.js",
   "/admin/page": "app/admin/page.js",
-  "/admin/pages/page": "app/admin/pages/page.js"
+  "/admin/resources/[category]/[resourceType]/page": "app/admin/resources/[category]/[resourceType]/page.js"
 }

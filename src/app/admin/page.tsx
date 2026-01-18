@@ -1,9 +1,14 @@
-'use client'
-
+export const dynamic = 'force-dynamic'
 import { FileText, Database, Users } from 'lucide-react'
 import Link from 'next/link'
+import { getPosts } from '@/app/actions/content'
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  const posts = await getPosts()
+  const totalPosts = posts.length
+  const resourceCount = posts.filter((post) => post.type === 'resource').length
+  const blogCount = posts.filter((post) => post.type === 'blog').length
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -21,7 +26,7 @@ export default function AdminDashboard() {
             </div>
             <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">文章总数</span>
           </div>
-          <div className="text-3xl font-bold text-slate-900">-</div>
+          <div className="text-3xl font-bold text-slate-900">{totalPosts}</div>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
@@ -31,7 +36,7 @@ export default function AdminDashboard() {
             </div>
             <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">资源数量</span>
           </div>
-          <div className="text-3xl font-bold text-slate-900">-</div>
+          <div className="text-3xl font-bold text-slate-900">{resourceCount}</div>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
@@ -41,7 +46,7 @@ export default function AdminDashboard() {
             </div>
             <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">博客数量</span>
           </div>
-          <div className="text-3xl font-bold text-slate-900">-</div>
+          <div className="text-3xl font-bold text-slate-900">{blogCount}</div>
         </div>
       </div>
       

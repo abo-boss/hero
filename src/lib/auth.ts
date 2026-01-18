@@ -10,6 +10,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET || "hero-nextauth-secret-fallback",
   pages: {
     signIn: "/admin/login",
   },

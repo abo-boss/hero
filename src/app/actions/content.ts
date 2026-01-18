@@ -1,12 +1,10 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { nanoid } from 'nanoid'
 import { POST_TYPES, CATEGORIES, RESOURCE_TYPES } from '@/lib/constants'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // Helper to extract and process form data
 function parsePostFormData(formData: FormData) {
