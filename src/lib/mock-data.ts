@@ -53,3 +53,13 @@ export const MOCK_BLOGS: Post[] = [
     type: 'blog'
   }
 ]
+
+export const MOCK_TAG_PRESETS: Record<string, string[]> = {
+  'resource:ai:video': ['基础知识', '提示词', '实用教程', 'Vibe Coding', 'AI 产品', '创始人访谈'],
+  'resource:content-creation:video': ['写作', '内容创作', '小而美商业', '轻创业', '个人品牌', '运营策略'],
+  'resource:ai:tool': ['Productivity', 'Coding', 'Image Gen', 'Video Gen', 'Chatbot'],
+  'resource:ai:podcast': ['Interview', 'News', 'Tech', 'Research'],
+  'resource:content-creation:podcast': ['Interview', 'Story', 'Business'],
+  'resource:content-creation:article': ['Guide', 'Case Study', 'Opinion'],
+  'blog:default': ['Tech', 'Life', 'Coding', 'Update']
+}

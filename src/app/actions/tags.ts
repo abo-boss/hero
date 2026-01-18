@@ -3,15 +3,21 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { MOCK_TAG_PRESETS } from '@/lib/mock-data'
 
 export async function getTagPresets(key: string): Promise<string[]> {
-  const preset = await prisma.tagPreset.findUnique({
-    where: { key }
-  })
-  
-  if (!preset) return []
-  
-  return preset.tags.split(',').map(t => t.trim()).filter(Boolean)
+  try {
+    const preset = await prisma.tagPreset.findUnique({
+      where: { key }
+    })
+    
+    if (!preset) return []
+    
+    return preset.tags.split(',').map(t => t.trim()).filter(Boolean)
+  } catch (e) {
+    console.error('getTagPresets error:', e)
+    return MOCK_TAG_PRESETS[key] || []
+  }
 }
 
 export async function updateTagPresets(key: string, tags: string[]) {
@@ -30,12 +36,17 @@ export async function updateTagPresets(key: string, tags: string[]) {
 }
 
 export async function getAllTagPresets() {
-  const presets = await prisma.tagPreset.findMany()
-  const result: Record<string, string[]> = {}
-  
-  presets.forEach(p => {
-    result[p.key] = p.tags.split(',').map(t => t.trim()).filter(Boolean)
-  })
-  
-  return result
+  try {
+    const presets = await prisma.tagPreset.findMany()
+    const result: Record<string, string[]> = {}
+    
+    presets.forEach(p => {
+      result[p.key] = p.tags.split(',').map(t => t.trim()).filter(Boolean)
+    })
+    
+    return result
+  } catch (e) {
+    console.error('getAllTagPresets error:', e)
+    return MOCK_TAG_PRESETS
+  }
 }
