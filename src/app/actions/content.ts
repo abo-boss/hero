@@ -9,7 +9,7 @@ import fs from 'fs'
 import path from 'path'
 
 // Helper to save to db.json (Only works in local dev environment)
-function saveToDb(newDb: typeof db) {
+function saveToDb(newDb: any) {
   if (process.env.NODE_ENV === 'development') {
     const dbPath = path.join(process.cwd(), 'src/lib/db.json')
     fs.writeFileSync(dbPath, JSON.stringify(newDb, null, 2))
