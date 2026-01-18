@@ -49,13 +49,13 @@ export default async function ResourceSubCategoryPage({ params, searchParams }: 
 
   // Collect all unique tags from the filtered posts (before tag filtering)
   const allTags = Array.from(new Set(
-    posts.flatMap(p => p.tags ? p.tags.split(',').map(t => t.trim()) : [])
+    posts.flatMap(p => p.tags ? p.tags.split(',').map((t: string) => t.trim()) : [])
   )).sort()
 
   // Apply tag filter if selected
   if (selectedTag) {
     posts = posts.filter(p => 
-      p.tags && p.tags.split(',').map(t => t.trim()).includes(selectedTag)
+      p.tags && p.tags.split(',').map((t: string) => t.trim()).includes(selectedTag)
     )
   }
 
@@ -109,7 +109,7 @@ export default async function ResourceSubCategoryPage({ params, searchParams }: 
                   </td>
                   <td className="px-6 py-4">
                      <div className="flex flex-wrap gap-1">
-                      {post.tags ? post.tags.split(',').map(tag => (
+                      {post.tags ? post.tags.split(',').map((tag: string) => (
                         <span key={tag} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
                           {tag.trim()}
                         </span>
