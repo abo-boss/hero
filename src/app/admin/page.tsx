@@ -1,69 +1,60 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { PrismaClient } from "@prisma/client"
+'use client'
+
 import { FileText, Database, Users } from 'lucide-react'
+import Link from 'next/link'
 
-const prisma = new PrismaClient()
-
-async function getStats() {
-  const postsCount = await prisma.post.count()
-  const resourcesCount = await prisma.post.count({ where: { type: 'resource' } })
-  const blogsCount = await prisma.post.count({ where: { type: 'blog' } })
-  
-  return {
-    postsCount,
-    resourcesCount,
-    blogsCount
-  }
-}
-
-export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions)
-  const stats = await getStats()
-
+export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-           <h1 className="text-3xl font-bold text-slate-900">仪表盘</h1>
-           <p className="text-slate-500 mt-1">欢迎回来，{session?.user?.name}</p>
+          <h1 className="text-3xl font-bold text-slate-900">仪表盘</h1>
+          <p className="text-slate-500 mt-1">欢迎回来，阿波</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-           <div className="flex items-center gap-4 mb-4">
-             <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
-               <FileText className="w-5 h-5" />
-             </div>
-             <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">文章总数</span>
-           </div>
-           <div className="text-3xl font-bold text-slate-900">{stats.postsCount}</div>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
+              <FileText className="w-5 h-5" />
+            </div>
+            <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">文章总数</span>
+          </div>
+          <div className="text-3xl font-bold text-slate-900">-</div>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-           <div className="flex items-center gap-4 mb-4">
-             <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-500">
-               <Database className="w-5 h-5" />
-             </div>
-             <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">资源数量</span>
-           </div>
-           <div className="text-3xl font-bold text-slate-900">{stats.resourcesCount}</div>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-500">
+              <Database className="w-5 h-5" />
+            </div>
+            <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">资源数量</span>
+          </div>
+          <div className="text-3xl font-bold text-slate-900">-</div>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-           <div className="flex items-center gap-4 mb-4">
-             <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-500">
-               <Users className="w-5 h-5" />
-             </div>
-             <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">博客数量</span>
-           </div>
-           <div className="text-3xl font-bold text-slate-900">{stats.blogsCount}</div>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-500">
+              <Users className="w-5 h-5" />
+            </div>
+            <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">博客数量</span>
+          </div>
+          <div className="text-3xl font-bold text-slate-900">-</div>
         </div>
       </div>
       
       <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center py-20">
-         <p className="text-slate-500">从左侧边栏选择一个选项来管理内容。</p>
+         <p className="text-slate-500 mb-4">从左侧边栏选择一个选项来管理内容。</p>
+         <div className="flex items-center justify-center gap-4">
+           <Link href="/admin/content" className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium">
+             管理内容
+           </Link>
+           <Link href="/admin/blog" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium">
+             博客管理
+           </Link>
+         </div>
       </div>
     </div>
   )
