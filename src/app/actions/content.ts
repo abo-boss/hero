@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { nanoid } from 'nanoid'
 import { POST_TYPES, CATEGORIES, RESOURCE_TYPES } from '@/lib/constants'
-import { prisma } from '@/lib/prisma'
+import { MOCK_RESOURCES, MOCK_BLOGS } from '@/lib/mock-data'
 
 // Helper to extract and process form data
 function parsePostFormData(formData: FormData) {
@@ -56,45 +56,31 @@ function handlePostRedirect(type: string, category: string, resourceType: string
 }
 
 export async function getPosts() {
-  try {
-    return await prisma.post.findMany({
-      orderBy: { date: 'desc' }
-    })
-  } catch (e) {
-    return []
-  }
+  return [...MOCK_RESOURCES, ...MOCK_BLOGS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
 export async function getPost(id: string) {
-  try {
-    return await prisma.post.findUnique({
-      where: { id }
-    })
-  } catch (e) {
-    return null
-  }
+  // In mock data mode, we might not have 'id', but we can try to find by slug or just return null
+  // The Admin Edit page uses this. Let's assume slug matches id for mock, or just fail gracefully.
+  // Actually, for mock data, let's treat 'id' as 'slug' if id is not found
+  const allPosts = [...MOCK_RESOURCES, ...MOCK_BLOGS]
+  const post = allPosts.find(p => p.slug === id || p.id === id)
+  return post || null
 }
 
 export async function getPostBySlug(slug: string) {
-  try {
-    return await prisma.post.findUnique({
-      where: { slug }
-    })
-  } catch (e) {
-    return null
-  }
+  const allPosts = [...MOCK_RESOURCES, ...MOCK_BLOGS]
+  const post = allPosts.find(p => p.slug === slug)
+  return post || null
 }
 
 export async function createPost(formData: FormData) {
   const data = parsePostFormData(formData)
 
-  await prisma.post.create({
-    data: {
-      ...data,
-      date: new Date(),
-    }
-  })
-
+  console.log('CREATE POST (File Mode - No Persistence):', data)
+  // In a real file-based CMS, we would write this to a JSON/MDX file here.
+  // For now, this just logs and redirects.
+  
   // Revalidate Admin Paths
   revalidatePath('/admin/content')
   revalidatePath('/admin/blog')
@@ -118,10 +104,7 @@ export async function createPost(formData: FormData) {
 export async function updatePost(id: string, formData: FormData) {
   const data = parsePostFormData(formData)
 
-  await prisma.post.update({
-    where: { id },
-    data
-  })
+  console.log('UPDATE POST (File Mode - No Persistence):', id, data)
 
   // Revalidate Admin Paths
   revalidatePath('/admin/content')
@@ -145,9 +128,6 @@ export async function updatePost(id: string, formData: FormData) {
 }
 
 export async function deletePost(id: string) {
-  await prisma.post.delete({
-    where: { id }
-  })
-
+  console.log('DELETE POST (File Mode - No Persistence):', id)
   revalidatePath('/admin/content')
 }
