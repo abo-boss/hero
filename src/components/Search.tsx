@@ -150,7 +150,7 @@ export function Search() {
 
               {!loading && query && results.length === 0 && (
                 <div className="py-12 text-center text-slate-500 text-sm">
-                  未找到与 "{query}" 相关的内容
+                  未找到与 “{query}” 相关的内容
                 </div>
               )}
 

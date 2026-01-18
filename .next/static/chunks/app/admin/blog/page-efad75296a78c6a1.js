@@ -1,0 +1,11 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[63,975],{9742:function(e,t,r){Promise.resolve().then(r.t.bind(r,5250,23)),Promise.resolve().then(r.bind(r,3343))},7461:function(e,t,r){"use strict";r.d(t,{Z:function(){return s}});var n=r(4090),o={xmlns:"http://www.w3.org/2000/svg",width:24,height:24,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round"};/**
+ * @license lucide-react v0.300.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let i=e=>e.replace(/([a-z0-9])([A-Z])/g,"$1-$2").toLowerCase().trim(),s=(e,t)=>{let r=(0,n.forwardRef)((r,s)=>{let{color:c="currentColor",size:u=24,strokeWidth:l=2,absoluteStrokeWidth:a,className:d="",children:h,...k}=r;return(0,n.createElement)("svg",{ref:s,...o,width:u,height:u,stroke:c,strokeWidth:a?24*Number(l)/Number(u):l,className:["lucide","lucide-".concat(i(e)),d].join(" "),...k},[...t.map(e=>{let[t,r]=e;return(0,n.createElement)(t,r)}),...Array.isArray(h)?h:[h]])});return r.displayName="".concat(e),r}},3343:function(e,t,r){"use strict";r.r(t),r.d(t,{DeleteButton:function(){return i}});var n=r(3827);/**
+ * @license lucide-react v0.300.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let o=(0,r(7461).Z)("Trash2",[["path",{d:"M3 6h18",key:"d0wm0j"}],["path",{d:"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6",key:"4alrt4"}],["path",{d:"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",key:"v07s0e"}],["line",{x1:"10",x2:"10",y1:"11",y2:"17",key:"1uufr5"}],["line",{x1:"14",x2:"14",y1:"11",y2:"17",key:"xtxkd"}]]);function i(){return(0,n.jsx)("button",{type:"submit",className:"p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors",onClick:e=>{confirm("您确定要删除这篇文章吗？")||e.preventDefault()},children:(0,n.jsx)(o,{className:"w-4 h-4"})})}}},function(e){e.O(0,[250,971,69,744],function(){return e(e.s=9742)}),_N_E=e.O()}]);
