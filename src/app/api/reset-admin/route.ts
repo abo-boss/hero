@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 const RESET_TOKEN = process.env.RESET_ADMIN_TOKEN
 
-export async function POST(request: Request) {
+async function handleReset(request: Request) {
   const url = new URL(request.url)
   const token = url.searchParams.get('token')
 
@@ -33,5 +33,13 @@ export async function POST(request: Request) {
     success: true,
     email: user.email,
   })
+}
+
+export async function GET(request: Request) {
+  return handleReset(request)
+}
+
+export async function POST(request: Request) {
+  return handleReset(request)
 }
 
