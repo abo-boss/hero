@@ -142,16 +142,16 @@ export function PostForm({ action, initialData, isEditing, defaultType, defaultC
       
       const data = await res.json()
       
-      if (data.title && !title) setTitle(data.title)
-      if (data.description && !description) setDescription(data.description)
+      if (data.title) setTitle(data.title)
+      if (data.description) setDescription(data.description)
       // 如果解析出作者，优先填入 author 字段
-      if (data.author && !author) {
+      if (data.author) {
         setAuthor(data.author)
       }
-      if (data.duration && !duration) {
+      if (data.duration) {
         setDuration(data.duration)
       }
-      if (data.coverImage && !coverImage) {
+      if (data.coverImage) {
         setCoverImage(data.coverImage)
       }
       
