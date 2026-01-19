@@ -81,6 +81,16 @@ export async function POST(request: Request) {
                           root.querySelector('meta[property="og:description"]')?.getAttribute('content') || 
                           root.querySelector('meta[name="twitter:description"]')?.getAttribute('content') || ''
             description = he.decode(description).trim()
+
+            // Check for generic YouTube description and clear it if found
+            const genericDescriptions = [
+                "Enjoy the videos and music you love, upload original content, and share it all with friends, family, and the world on YouTube.",
+                "欣赏您喜爱的视频和音乐，上传原创内容，并在 YouTube 上与朋友、家人和全世界分享。",
+                "YouTube"
+            ]
+            if (genericDescriptions.includes(description)) {
+                description = ''
+            }
         }
 
         // 3. Author (Fallback)
