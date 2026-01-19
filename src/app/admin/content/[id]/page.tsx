@@ -2,6 +2,8 @@ import { PostForm } from '@/components/admin/PostForm'
 import { getPost, updatePost } from '@/app/actions/content'
 import { notFound } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 export default async function EditContentPage({ params }: { params: { id: string } }) {
   const post = await getPost(params.id)
 
