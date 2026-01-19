@@ -25,6 +25,7 @@ export async function updatePageContent(formData: FormData) {
     })
   }
 
+  revalidatePath('/', 'layout')
   revalidatePath('/')
   revalidatePath('/about')
   revalidatePath('/admin/pages')
