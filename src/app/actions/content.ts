@@ -4,20 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { nanoid } from 'nanoid'
 import { POST_TYPES, CATEGORIES, RESOURCE_TYPES } from '@/lib/constants'
-import db from '@/lib/db.json'
-import fs from 'fs'
-import path from 'path'
-
-// Helper to save to db.json (Only works in local dev environment)
-function saveToDb(newDb: any) {
-  if (process.env.NODE_ENV === 'development') {
-    const dbPath = path.join(process.cwd(), 'src/lib/db.json')
-    fs.writeFileSync(dbPath, JSON.stringify(newDb, null, 2))
-    console.log('Saved to local DB file:', dbPath)
-  } else {
-    console.warn('Cannot write to file system in production (Vercel is read-only).')
-  }
-}
+import { prisma } from '@/lib/prisma'
 
 // Helper to extract and process form data
 function parsePostFormData(formData: FormData) {
@@ -69,19 +56,31 @@ function handlePostRedirect(type: string, category: string, resourceType: string
 }
 
 export async function getPosts() {
-  return (db.posts as any[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const posts = await prisma.post.findMany({
+    orderBy: {
+      date: 'desc',
+    },
+  })
+
+  return posts
 }
 
 export async function getPost(id: string) {
-  const allPosts = db.posts as any[]
-  const post = allPosts.find(p => p.slug === id || p.id === id)
-  return post || null
+  const post = await prisma.post.findFirst({
+    where: {
+      OR: [{ id }, { slug: id }],
+    },
+  })
+
+  return post
 }
 
 export async function getPostBySlug(slug: string) {
-  const allPosts = db.posts as any[]
-  const post = allPosts.find(p => p.slug === slug)
-  return post || null
+  const post = await prisma.post.findUnique({
+    where: { slug },
+  })
+
+  return post
 }
 
 export async function createPost(formData: FormData) {
@@ -89,18 +88,25 @@ export async function createPost(formData: FormData) {
 
   console.log('CREATE POST:', data)
   
-  const newPost = {
-    ...data,
-    id: nanoid(),
-    date: new Date().toISOString(),
-  }
-  
-  const newDb = {
-    ...db,
-    posts: [newPost, ...db.posts]
-  }
-  
-  saveToDb(newDb)
+  await prisma.post.create({
+    data: {
+      id: nanoid(),
+      slug: data.slug,
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      type: data.type,
+      resourceType: data.resourceType,
+      category: data.category,
+      tags: data.tags,
+      link: data.link,
+      coverImage: data.coverImage,
+      duration: data.duration,
+      author: data.author,
+      published: true,
+      date: new Date(),
+    },
+  })
   
   // Revalidate Admin Paths
   revalidatePath('/admin/content')
@@ -127,26 +133,23 @@ export async function updatePost(id: string, formData: FormData) {
 
   console.log('UPDATE POST:', id, data)
 
-  const posts = db.posts as any[]
-  const index = posts.findIndex(p => p.id === id || p.slug === id)
-  
-  if (index !== -1) {
-    const updatedPost = {
-      ...posts[index],
-      ...data,
-      date: new Date().toISOString() // Update date on edit? Or keep original? Usually keep original unless republishing.
-    }
-    
-    const newPosts = [...posts]
-    newPosts[index] = updatedPost
-    
-    const newDb = {
-      ...db,
-      posts: newPosts
-    }
-    
-    saveToDb(newDb)
-  }
+  await prisma.post.update({
+    where: { id },
+    data: {
+      slug: data.slug,
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      type: data.type,
+      resourceType: data.resourceType,
+      category: data.category,
+      tags: data.tags,
+      link: data.link,
+      coverImage: data.coverImage,
+      duration: data.duration,
+      author: data.author,
+    },
+  })
 
   // Revalidate Admin Paths
   revalidatePath('/admin/content')
@@ -171,16 +174,10 @@ export async function updatePost(id: string, formData: FormData) {
 
 export async function deletePost(id: string) {
   console.log('DELETE POST:', id)
-  
-  const posts = db.posts as any[]
-  const newPosts = posts.filter(p => p.id !== id && p.slug !== id)
-  
-  const newDb = {
-    ...db,
-    posts: newPosts
-  }
-  
-  saveToDb(newDb)
+
+  await prisma.post.delete({
+    where: { id },
+  })
 
   revalidatePath('/admin/content')
 }

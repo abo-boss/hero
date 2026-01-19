@@ -1,4 +1,4 @@
-import db from './db.json'
+import { prisma } from '@/lib/prisma'
 
 export type ResourceType = 'ai' | 'content-creation'
 
@@ -17,24 +17,59 @@ export interface Post {
 
 export async function getAllPosts(section: 'blog' | 'resources' | 'resource', subType?: ResourceType) {
   const type = section === 'resources' ? 'resource' : section
-  
-  // Read from local JSON file
-  let posts = (db.posts as Post[]).filter(p => p.type === type)
-  
-  if (type === 'resource' && subType) {
-    posts = posts.filter(p => p.category === subType)
-  }
-  
-  return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+  const posts = await prisma.post.findMany({
+    where: {
+      type,
+      ...(type === 'resource' && subType ? { category: subType } : {}),
+      published: true,
+    },
+    orderBy: {
+      date: 'desc',
+    },
+  })
+
+  return posts.map((post) => ({
+    ...post,
+    date: post.date.toISOString(),
+    tags: post.tags
+      ? post.tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [],
+  })) as unknown as Post[]
 }
 
 export async function getPostBySlug(slug: string) {
-  const allPosts = db.posts as Post[]
-  const post = allPosts.find(p => p.slug === slug)
-  return post || null
+  const post = await prisma.post.findUnique({
+    where: { slug },
+  })
+
+  if (!post) return null
+
+  return {
+    ...post,
+    date: post.date.toISOString(),
+    tags: post.tags
+      ? post.tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [],
+  } as unknown as Post
 }
 
 export async function getAllResources() {
-  const posts = (db.posts as Post[]).filter(p => p.type === 'resource')
-  return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const posts = await prisma.post.findMany({
+    where: {
+      type: 'resource',
+      published: true,
+    },
+    orderBy: {
+      date: 'desc',
+    },
+  })
+
+  return posts.map((post) => ({
+    ...post,
+    date: post.date.toISOString(),
+    tags: post.tags
+      ? post.tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [],
+  })) as unknown as Post[]
 }
