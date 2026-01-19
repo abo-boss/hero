@@ -33,85 +33,118 @@ export async function POST(request: Request) {
     let duration = ''
     let coverImage = ''
 
-    // Strategy 0: YouTube oEmbed (Most Reliable for Title/Author/Cover)
+    // Strategy 1: @distube/ytdl-core (Primary for YouTube)
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       try {
-        const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
-        const oembedRes = await fetch(oembedUrl)
-        if (oembedRes.ok) {
-          const data = await oembedRes.json()
-          title = data.title
-          author = data.author_name
-          coverImage = data.thumbnail_url
-          // Note: oEmbed doesn't provide description or duration
-          
-          // Strategy 0.5: Direct Video Page Parsing (Most reliable for Description & Duration without API Key)
-          try {
-             // Extract Video ID
-             const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
-             const videoId = videoIdMatch ? videoIdMatch[1] : null
-             
-             if (videoId) {
-                 const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
-                 const videoRes = await fetch(videoUrl, {
-                     headers: {
-                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                         'Accept-Language': 'en-US,en;q=0.9',
-                     }
-                 })
-                 const videoHtml = await videoRes.text()
-                 
-                 // Try to extract ytInitialPlayerResponse
-                 const jsonMatch = videoHtml.match(/ytInitialPlayerResponse\s*=\s*({.+?});/)
-                 if (jsonMatch) {
-                     try {
-                         const playerData = JSON.parse(jsonMatch[1])
-                         const details = playerData.videoDetails
-                         
-                         if (details) {
-                             // Get full description
-                             if (details.shortDescription) {
-                                 description = details.shortDescription
-                             }
-                             
-                             // Get duration (seconds) and format it
-                             if (details.lengthSeconds) {
-                                 const secondsTotal = parseInt(details.lengthSeconds)
-                                 const hours = Math.floor(secondsTotal / 3600)
-                                 const minutes = Math.floor((secondsTotal % 3600) / 60)
-                                 const seconds = secondsTotal % 60
-                                 
-                                 const s = seconds.toString().padStart(2, '0')
-                                 const m = minutes.toString().padStart(2, '0')
-                                 
-                                 if (hours > 0) {
-                                     duration = `${hours}:${m}:${s}`
-                                 } else {
-                                     duration = `${minutes}:${s}`
-                                 }
-                             }
-                             
-                             // Fallback title/author if oEmbed failed (unlikely but good to have)
-                             if (!title && details.title) title = details.title
-                             if (!author && details.author) author = details.author
-                         }
-                     } catch (e) {
-                         console.error('Failed to parse ytInitialPlayerResponse:', e)
-                     }
-                 }
-                 
-                 // Fallback: Try meta tags if JSON failed but we have HTML
-                 if (!description) {
-                     const metaDesc = videoHtml.match(/<meta name="description" content="([^"]*)"/)
-                     if (metaDesc) description = he.decode(metaDesc[1])
-                 }
-             }
-          } catch (e) {
-              console.error('YouTube Video Page fallback failed:', e)
+        // Dynamic import to avoid build issues if package missing
+        const ytdl = (await import('@distube/ytdl-core')).default
+        
+        const info = await ytdl.getBasicInfo(url, {
+          requestOptions: {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept-Language': 'en-US,en;q=0.9',
+            }
           }
+        })
+        
+        const details = info.videoDetails
+        title = details.title
+        description = details.description || ''
+        author = details.author.name
+        
+        // Duration
+        if (details.lengthSeconds) {
+            const secondsTotal = parseInt(details.lengthSeconds)
+            const hours = Math.floor(secondsTotal / 3600)
+            const minutes = Math.floor((secondsTotal % 3600) / 60)
+            const seconds = secondsTotal % 60
+            
+            const s = seconds.toString().padStart(2, '0')
+            const m = minutes.toString().padStart(2, '0')
+            
+            if (hours > 0) {
+                duration = `${hours}:${m}:${s}`
+            } else {
+                duration = `${minutes}:${s}`
+            }
         }
-      } catch (e) {
-        console.error('oEmbed failed:', e)
+        
+        // Cover Image (Highest Res)
+        if (details.thumbnails && details.thumbnails.length > 0) {
+            coverImage = details.thumbnails[details.thumbnails.length - 1].url
+        }
+
+      } catch (ytdlError) {
+        console.error('ytdl-core failed, falling back to oEmbed:', ytdlError)
+        
+        // Strategy 2: oEmbed (Fallback)
+        try {
+            const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+            const oembedRes = await fetch(oembedUrl)
+            if (oembedRes.ok) {
+            const data = await oembedRes.json()
+            if (!title) title = data.title
+            if (!author) author = data.author_name
+            if (!coverImage) coverImage = data.thumbnail_url
+            }
+        } catch (e) {
+            console.error('oEmbed failed:', e)
+        }
+        
+        // Strategy 3: Direct Page Parsing (Fallback for Desc/Duration)
+        if (!description || !duration) {
+            try {
+                // Extract Video ID
+                const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
+                const videoId = videoIdMatch ? videoIdMatch[1] : null
+                
+                if (videoId) {
+                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
+                    const videoRes = await fetch(videoUrl, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Accept-Language': 'en-US,en;q=0.9',
+                        }
+                    })
+                    const videoHtml = await videoRes.text()
+                    
+                    // Try to extract ytInitialPlayerResponse
+                    const jsonMatch = videoHtml.match(/ytInitialPlayerResponse\s*=\s*({.+?});/)
+                    if (jsonMatch) {
+                        try {
+                            const playerData = JSON.parse(jsonMatch[1])
+                            const details = playerData.videoDetails
+                            
+                            if (details) {
+                                if (!description && details.shortDescription) description = details.shortDescription
+                                
+                                if (!duration && details.lengthSeconds) {
+                                    const secondsTotal = parseInt(details.lengthSeconds)
+                                    const hours = Math.floor(secondsTotal / 3600)
+                                    const minutes = Math.floor((secondsTotal % 3600) / 60)
+                                    const seconds = secondsTotal % 60
+                                    
+                                    const s = seconds.toString().padStart(2, '0')
+                                    const m = minutes.toString().padStart(2, '0')
+                                    
+                                    if (hours > 0) duration = `${hours}:${m}:${s}`
+                                    else duration = `${minutes}:${s}`
+                                }
+                                
+                                if (!title && details.title) title = details.title
+                                if (!author && details.author) author = details.author
+                            }
+                        } catch (e) { console.error('Failed to parse ytInitialPlayerResponse:', e) }
+                    }
+                    
+                    if (!description) {
+                        const metaDesc = videoHtml.match(/<meta name="description" content="([^"]*)"/)
+                        if (metaDesc) description = he.decode(metaDesc[1])
+                    }
+                }
+            } catch (e) { console.error('Direct parsing failed:', e) }
+        }
       }
     }
 
