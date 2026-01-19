@@ -169,6 +169,75 @@ export async function POST(request: Request) {
                     }
                 }
             }
+
+            // Method C: YouTube Search Page Fallback (Most robust for Duration & Description)
+            if ((!duration || !description) && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+                try {
+                    const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
+                    const videoId = videoIdMatch ? videoIdMatch[1] : null
+
+                    if (videoId) {
+                        const searchUrl = `https://www.youtube.com/results?search_query=${videoId}&sp=EgIQAQ%253D%253D` // sp=EgIQAQ%253D%253D filters for video only
+                        const searchRes = await fetch(searchUrl, { 
+                            headers: {
+                                ...headers,
+                                // Use a slightly different User-Agent for search to avoid strict bot detection
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                            } 
+                        })
+                        const searchHtml = await searchRes.text()
+                        
+                        const dataMatch = searchHtml.match(/var ytInitialData\s*=\s*({.+?});/)
+                        if (dataMatch) {
+                            const ytData = JSON.parse(dataMatch[1])
+                            const contents = ytData.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents
+                            
+                            if (contents) {
+                                // Find the itemSectionRenderer
+                                for (const section of contents) {
+                                    if (section.itemSectionRenderer?.contents) {
+                                        const videoItems = section.itemSectionRenderer.contents
+                                        for (const item of videoItems) {
+                                            if (item.videoRenderer && item.videoRenderer.videoId === videoId) {
+                                                const vid = item.videoRenderer
+                                                
+                                                // Duration (simpleText usually "MM:SS" or "H:MM:SS")
+                                                if (!duration && vid.lengthText) {
+                                                    const timeStr = vid.lengthText.simpleText || vid.lengthText.accessibility?.accessibilityData?.label
+                                                    if (timeStr) {
+                                                        // If it's already in format like "12:34", use it. 
+                                                        // Accessibility label might be "12 minutes, 34 seconds", so prefer simpleText
+                                                        if (vid.lengthText.simpleText) {
+                                                            duration = vid.lengthText.simpleText
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                // Description
+                                                if (!description && vid.detailedMetadataSnippets?.[0]?.snippetText?.runs) {
+                                                     description = vid.detailedMetadataSnippets[0].snippetText.runs.map((r: any) => r.text).join('')
+                                                } else if (!description && vid.descriptionSnippet?.runs) {
+                                                     description = vid.descriptionSnippet.runs.map((r: any) => r.text).join('')
+                                                }
+
+                                                // Title fallback
+                                                if (!title && vid.title?.runs?.[0]?.text) {
+                                                    title = vid.title.runs[0].text
+                                                }
+                                                
+                                                break
+                                            }
+                                        }
+                                    }
+                                    if (duration && description) break
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Search page fallback failed:', e)
+                }
+            }
         }
       }
     } catch (e) {

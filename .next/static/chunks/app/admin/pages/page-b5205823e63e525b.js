@@ -1,0 +1,16 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[327],{8575:function(e,t,r){Promise.resolve().then(r.bind(r,6402))},7461:function(e,t,r){"use strict";r.d(t,{Z:function(){return s}});var n=r(4090),a={xmlns:"http://www.w3.org/2000/svg",width:24,height:24,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round"};/**
+ * @license lucide-react v0.300.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let o=e=>e.replace(/([a-z0-9])([A-Z])/g,"$1-$2").toLowerCase().trim(),s=(e,t)=>{let r=(0,n.forwardRef)((r,s)=>{let{color:u="currentColor",size:i=24,strokeWidth:c=2,absoluteStrokeWidth:l,className:d="",children:h,...f}=r;return(0,n.createElement)("svg",{ref:s,...a,width:i,height:i,stroke:u,strokeWidth:l?24*Number(c)/Number(i):c,className:["lucide","lucide-".concat(o(e)),d].join(" "),...f},[...t.map(e=>{let[t,r]=e;return(0,n.createElement)(t,r)}),...Array.isArray(h)?h:[h]])});return r.displayName="".concat(e),r}},8994:function(e,t,r){"use strict";r.d(t,{Z:function(){return n}});/**
+ * @license lucide-react v0.300.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let n=(0,r(7461).Z)("Loader2",[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]])},834:function(e,t,r){"use strict";r.d(t,{Z:function(){return n}});/**
+ * @license lucide-react v0.300.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let n=(0,r(7461).Z)("RefreshCw",[["path",{d:"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8",key:"v9h5vc"}],["path",{d:"M21 3v5h-5",key:"1q7to0"}],["path",{d:"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16",key:"3uifl3"}],["path",{d:"M8 16H3v5",key:"1cv678"}]])},7907:function(e,t,r){"use strict";var n=r(5313);r.o(n,"usePathname")&&r.d(t,{usePathname:function(){return n.usePathname}}),r.o(n,"useRouter")&&r.d(t,{useRouter:function(){return n.useRouter}}),r.o(n,"useSearchParams")&&r.d(t,{useSearchParams:function(){return n.useSearchParams}})},6402:function(e,t,r){"use strict";r.r(t),r.d(t,{SeedButton:function(){return i}});var n=r(3827),a=r(4090),o=r(7907),s=r(8994),u=r(834);function i(){let[e,t]=(0,a.useState)(!1),r=(0,o.useRouter)(),i=async()=>{try{t(!0);let e=await fetch("/api/seed-page-content"),n=await e.json();if(!e.ok)throw Error(n.error||"Failed to seed content");alert("初始化成功！页面将刷新。"),r.refresh()}catch(e){console.error("Seeding failed:",e),alert("初始化失败: ".concat(e.message))}finally{t(!1)}};return(0,n.jsxs)("button",{onClick:i,disabled:e,className:"flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed",children:[e?(0,n.jsx)(s.Z,{className:"w-5 h-5 animate-spin"}):(0,n.jsx)(u.Z,{className:"w-5 h-5"}),e?"初始化中...":"初始化默认配置"]})}}},function(e){e.O(0,[971,69,744],function(){return e(e.s=8575)}),_N_E=e.O()}]);
