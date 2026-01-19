@@ -10,10 +10,16 @@ export default async function AboutPage() {
   const title = content.find((c: any) => c.page === 'about' && c.section === 'intro' && c.key === 'title')?.value || '关于我'
   const description = content.find((c: any) => c.page === 'about' && c.section === 'intro' && c.key === 'description')?.value || '你好，我是阿波，一名内容创作者和 AI 爱好者。'
 
-  // Get the first user (admin)
-  const user = await prisma.user.findFirst({
-    orderBy: { createdAt: 'asc' }
-  })
+  // Get the first user (admin) with error handling
+  let user = null
+  try {
+    user = await prisma.user.findFirst({
+      orderBy: { createdAt: 'asc' }
+    })
+  } catch (error) {
+    console.error('Failed to fetch user for about page:', error)
+    // Fallback is handled in UI (checking if user exists)
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-slate-50/50">
