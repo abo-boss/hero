@@ -6,7 +6,13 @@ import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 
 export default async function AboutPage() {
-  const content = await getPageContent()
+  let content: any[] = []
+  try {
+    content = await getPageContent()
+  } catch (error) {
+    console.error('Failed to get page content:', error)
+    content = []
+  }
   const title = content.find((c: any) => c.page === 'about' && c.section === 'intro' && c.key === 'title')?.value || '关于我'
   const description = content.find((c: any) => c.page === 'about' && c.section === 'intro' && c.key === 'description')?.value || '你好，我是阿波，一名内容创作者和 AI 爱好者。'
 
