@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     let author = ''
     let duration = ''
     let coverImage = ''
+    let keywords: string[] = []
 
     // Common headers for requests
     const headers = {
@@ -96,6 +97,14 @@ export async function POST(request: Request) {
             author = he.decode(author).trim()
         }
 
+        // 3.5. Keywords (Fallback)
+        if (keywords.length === 0) {
+            const metaKeywords = root.querySelector('meta[name="keywords"]')?.getAttribute('content')
+            if (metaKeywords) {
+                keywords = metaKeywords.split(',').map(k => k.trim()).filter(k => k)
+            }
+        }
+
         // 4. Cover Image (Fallback & High Res Upgrade)
         if (!coverImage || (url.includes('youtube.com') || url.includes('youtu.be'))) {
             // Check meta tags
@@ -150,6 +159,7 @@ export async function POST(request: Request) {
                             if (!title) title = details.title
                             if (!author) author = details.author
                             if (!description && details.shortDescription) description = details.shortDescription
+                            if (details.keywords) keywords = details.keywords
 
                             if (details.lengthSeconds) {
                                 const secondsTotal = parseInt(details.lengthSeconds)
@@ -244,7 +254,22 @@ export async function POST(request: Request) {
       console.error('Direct parsing failed:', e)
     }
 
-    // 6. Translation
+    // 6. Generate Summary if Description is Empty
+    if (!description && title) {
+        // Try to construct a summary from available metadata
+        const parts = []
+        parts.push(`视频标题：${title}`)
+        if (author) parts.push(`作者：${author}`)
+        if (keywords && keywords.length > 0) {
+            parts.push(`关键词：${keywords.slice(0, 10).join('、')}`) // Limit to 10 keywords
+        }
+        
+        if (parts.length > 1) {
+             description = `【自动生成摘要】\n${parts.join('\n')}`
+        }
+    }
+
+    // 7. Translation
     try {
         // Translate Title: "Chinese (Original)"
         if (title) {
