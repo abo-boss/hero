@@ -383,21 +383,26 @@ export function PostForm({ action, initialData, isEditing, defaultType, defaultC
           </div>
         )}
 
-        {/* Cover Image for Resources */}
+        {/* Cover Image for Resources - Hidden Input but Preview Shown */}
         {(type === 'resource' || defaultType === 'resource') && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">封面图片 URL (可自动生成)</label>
               <div className="flex gap-4 items-start">
                 <input
+                  type="hidden"
                   name="coverImage"
                   value={coverImage}
-                  onChange={(e) => setCoverImage(e.target.value)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="图片 URL"
                 />
                 {coverImage && (
-                  <div className="w-32 h-20 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200">
+                  <div className="w-full h-40 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200 relative group">
                     <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                    <button
+                        type="button"
+                        onClick={() => setCoverImage('')}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove Cover"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
                   </div>
                 )}
               </div>

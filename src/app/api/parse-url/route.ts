@@ -43,7 +43,44 @@ export async function POST(request: Request) {
           title = data.title
           author = data.author_name
           coverImage = data.thumbnail_url
-          // Note: oEmbed doesn't provide description or duration, so we still need to scrape
+          // Note: oEmbed doesn't provide description or duration
+          
+          // Strategy 0.5: Search Page Fallback for Duration & Description (Bypass bot detection)
+          try {
+             // Extract Video ID
+             const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
+             const videoId = videoIdMatch ? videoIdMatch[1] : null
+             
+             if (videoId) {
+                 const searchUrl = `https://www.youtube.com/results?search_query=${videoId}`
+                 const searchRes = await fetch(searchUrl, {
+                     headers: {
+                         'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+                         'Accept-Language': 'en-US,en;q=0.9'
+                     }
+                 })
+                 const searchHtml = await searchRes.text()
+                 
+                 // Extract Duration
+                 // "lengthText":{"accessibility":{"accessibilityData":{"label":"3 minutes, 33 seconds"}},"simpleText":"3:33"}
+                 const durationMatch = searchHtml.match(/"lengthText":{.*?"simpleText":"(.*?)"}/)
+                 if (durationMatch) {
+                     duration = durationMatch[1]
+                 }
+                 
+                 // Extract Description Snippet
+                 // "descriptionSnippet":{"runs":[{"text":"..."}]}
+                 // Note: This might be partial, but better than nothing
+                 if (!description) {
+                     const descMatch = searchHtml.match(/"descriptionSnippet":{.*?"text":"(.*?)"/)
+                     if (descMatch) {
+                         description = descMatch[1]
+                     }
+                 }
+             }
+          } catch (e) {
+              console.error('YouTube Search Page fallback failed:', e)
+          }
         }
       } catch (e) {
         console.error('oEmbed failed:', e)

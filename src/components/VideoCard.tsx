@@ -56,7 +56,7 @@ export function VideoCard({ post }: VideoCardProps) {
   return (
     <div className="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-md hover:border-slate-200 overflow-hidden">
       {/* Video Area */}
-      <div className="relative aspect-video w-full bg-slate-900">
+      <div className="relative aspect-video w-full bg-slate-900 overflow-hidden">
         {isPlaying ? (
           <iframe 
             src={videoSrc}
@@ -85,7 +85,7 @@ export function VideoCard({ post }: VideoCardProps) {
                src={imgSrc} 
                onError={handleError}
                alt={post.title}
-               className="w-full h-full object-cover"
+               className={`w-full h-full object-cover ${imgSrc.includes('hqdefault') ? 'scale-135' : ''}`}
              />
              
              {/* Play Button */}
@@ -98,17 +98,14 @@ export function VideoCard({ post }: VideoCardProps) {
              </div>
 
              {/* Duration Badge (Bottom Right) */}
-             {post.duration ? (
-               <div className="absolute bottom-3 right-3 z-20 px-2 py-1 rounded bg-black/80 text-white text-xs font-bold flex items-center backdrop-blur-sm">
-                 {post.duration}
-               </div>
-             ) : (
-               /* Fallback to Platform Badge if no duration */
-               <div className="absolute bottom-3 right-3 z-20 px-2 py-1 rounded bg-black/60 text-white text-xs font-medium flex items-center gap-1 backdrop-blur-sm">
-                 <Play className="w-3 h-3" />
-                 {platform}
-               </div>
-             )}
+             <div className="absolute bottom-3 right-3 z-20 px-2 py-1 rounded bg-black/80 text-white text-xs font-bold flex items-center backdrop-blur-sm">
+               {post.duration || (
+                 <span className="flex items-center gap-1">
+                   <Play className="w-3 h-3" />
+                   {platform}
+                 </span>
+               )}
+             </div>
           </div>
         )}
       </div>
