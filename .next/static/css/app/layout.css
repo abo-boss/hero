@@ -2374,6 +2374,9 @@ video {
 .h-px {
   height: 1px;
 }
+.h-20 {
+  height: 5rem;
+}
 .max-h-60 {
   max-height: 15rem;
 }
@@ -2448,6 +2451,9 @@ video {
 }
 .w-px {
   width: 1px;
+}
+.w-32 {
+  width: 8rem;
 }
 .min-w-0 {
   min-width: 0px;

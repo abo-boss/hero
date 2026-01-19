@@ -382,6 +382,27 @@ export function PostForm({ action, initialData, isEditing, defaultType, defaultC
             )}
           </div>
         )}
+
+        {/* Cover Image for Resources */}
+        {(type === 'resource' || defaultType === 'resource') && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">封面图片 URL (可自动生成)</label>
+              <div className="flex gap-4 items-start">
+                <input
+                  name="coverImage"
+                  value={coverImage}
+                  onChange={(e) => setCoverImage(e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="图片 URL"
+                />
+                {coverImage && (
+                  <div className="w-32 h-20 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200">
+                    <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+            </div>
+        )}
       </div>
 
       {type !== POST_TYPES.RESOURCE && defaultType !== POST_TYPES.RESOURCE && (
