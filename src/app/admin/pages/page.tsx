@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
-import { getPageContent, updatePageContent } from '@/app/actions/page-content'
-import { Save } from 'lucide-react'
+import { getPageContent, updatePageContent, seedPageContent } from '@/app/actions/page-content'
+import { Save, RefreshCw } from 'lucide-react'
 
 export default async function PageConfigPage() {
   const contents = await getPageContent()
@@ -11,6 +11,24 @@ export default async function PageConfigPage() {
     acc[item.page].push(item)
     return acc
   }, {} as Record<string, typeof contents>)
+
+  if (contents.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <h2 className="text-xl font-bold text-slate-900">暂无配置数据</h2>
+        <p className="text-slate-500">点击下方按钮初始化默认页面配置</p>
+        <form action={seedPageContent}>
+          <button 
+            type="submit"
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all"
+          >
+            <RefreshCw className="w-5 h-5" />
+            初始化默认配置
+          </button>
+        </form>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
