@@ -12,20 +12,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
-      }
-    })
-
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch URL' }, { status: 400 })
-    }
-
-    const html = await response.text()
-    const root = parse(html)
-
     // Initialize variables
     let title = ''
     let description = ''
@@ -33,243 +19,180 @@ export async function POST(request: Request) {
     let duration = ''
     let coverImage = ''
 
-    // Strategy 1: @distube/ytdl-core (Primary for YouTube)
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      try {
-        // Dynamic import to avoid build issues if package missing
-        const ytdl = (await import('@distube/ytdl-core')).default
-        
-        const info = await ytdl.getBasicInfo(url, {
-          requestOptions: {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept-Language': 'en-US,en;q=0.9',
-            }
-          }
-        })
-        
-        const details = info.videoDetails
-        title = details.title
-        description = details.description || ''
-        author = details.author.name
-        
-        // Duration
-        if (details.lengthSeconds) {
-            const secondsTotal = parseInt(details.lengthSeconds)
-            const hours = Math.floor(secondsTotal / 3600)
-            const minutes = Math.floor((secondsTotal % 3600) / 60)
-            const seconds = secondsTotal % 60
-            
-            const s = seconds.toString().padStart(2, '0')
-            const m = minutes.toString().padStart(2, '0')
-            
-            if (hours > 0) {
-                duration = `${hours}:${m}:${s}`
-            } else {
-                duration = `${minutes}:${s}`
-            }
-        }
-        
-        // Cover Image (Highest Res)
-        if (details.thumbnails && details.thumbnails.length > 0) {
-            coverImage = details.thumbnails[details.thumbnails.length - 1].url
-        }
-
-      } catch (ytdlError) {
-        console.error('ytdl-core failed, falling back to oEmbed:', ytdlError)
-        
-        // Strategy 2: oEmbed (Fallback)
-        try {
-            const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
-            const oembedRes = await fetch(oembedUrl)
-            if (oembedRes.ok) {
-            const data = await oembedRes.json()
-            if (!title) title = data.title
-            if (!author) author = data.author_name
-            if (!coverImage) coverImage = data.thumbnail_url
-            }
-        } catch (e) {
-            console.error('oEmbed failed:', e)
-        }
-        
-        // Strategy 3: Direct Page Parsing (Fallback for Desc/Duration)
-        if (!description || !duration) {
-            try {
-                // Extract Video ID
-                const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
-                const videoId = videoIdMatch ? videoIdMatch[1] : null
-                
-                if (videoId) {
-                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
-                    const videoRes = await fetch(videoUrl, {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                            'Accept-Language': 'en-US,en;q=0.9',
-                        }
-                    })
-                    const videoHtml = await videoRes.text()
-                    
-                    // Try to extract ytInitialPlayerResponse
-                    const jsonMatch = videoHtml.match(/ytInitialPlayerResponse\s*=\s*({.+?});/)
-                    if (jsonMatch) {
-                        try {
-                            const playerData = JSON.parse(jsonMatch[1])
-                            const details = playerData.videoDetails
-                            
-                            if (details) {
-                                if (!description && details.shortDescription) description = details.shortDescription
-                                
-                                if (!duration && details.lengthSeconds) {
-                                    const secondsTotal = parseInt(details.lengthSeconds)
-                                    const hours = Math.floor(secondsTotal / 3600)
-                                    const minutes = Math.floor((secondsTotal % 3600) / 60)
-                                    const seconds = secondsTotal % 60
-                                    
-                                    const s = seconds.toString().padStart(2, '0')
-                                    const m = minutes.toString().padStart(2, '0')
-                                    
-                                    if (hours > 0) duration = `${hours}:${m}:${s}`
-                                    else duration = `${minutes}:${s}`
-                                }
-                                
-                                if (!title && details.title) title = details.title
-                                if (!author && details.author) author = details.author
-                            }
-                        } catch (e) { console.error('Failed to parse ytInitialPlayerResponse:', e) }
-                    }
-                    
-                    if (!description) {
-                        const metaDesc = videoHtml.match(/<meta name="description" content="([^"]*)"/)
-                        if (metaDesc) description = he.decode(metaDesc[1])
-                    }
-                }
-            } catch (e) { console.error('Direct parsing failed:', e) }
-        }
-      }
+    // Common headers for requests
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9',
     }
 
-    // 1. Get Title (Fallback)
-    if (!title) {
-      title = root.querySelector('title')?.text || 
+    // Strategy 1: oEmbed (Best for Title, Author, Thumbnail on supported platforms)
+    // Works for YouTube, Vimeo, etc.
+    try {
+      let oembedUrl = ''
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+      } else if (url.includes('vimeo.com')) {
+        oembedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`
+      }
+
+      if (oembedUrl) {
+        const oembedRes = await fetch(oembedUrl)
+        if (oembedRes.ok) {
+          const data = await oembedRes.json()
+          if (data.title) title = data.title
+          if (data.author_name) author = data.author_name
+          if (data.thumbnail_url) coverImage = data.thumbnail_url
+        }
+      }
+    } catch (e) {
+      console.error('oEmbed failed:', e)
+    }
+
+    // Strategy 2: Direct Page Parsing (Required for Duration, Description, and fallback)
+    try {
+      // For YouTube, we might need to fetch the watch page even if oEmbed worked, 
+      // because oEmbed doesn't give duration or full description.
+      
+      const response = await fetch(url, { headers })
+      
+      if (response.ok) {
+        const html = await response.text()
+        const root = parse(html)
+
+        // 1. Title (Fallback)
+        if (!title) {
+          title = root.querySelector('title')?.text || 
                   root.querySelector('meta[property="og:title"]')?.getAttribute('content') || 
                   root.querySelector('meta[name="twitter:title"]')?.getAttribute('content') || ''
-      
-      // Decode & Clean up title
-      title = he.decode(title).trim()
-      if (url.includes('youtube.com') || url.includes('youtu.be')) {
-        title = title.replace(/ - YouTube$/, '')
-      } else if (url.includes('bilibili.com')) {
-        title = title.replace(/_哔哩哔哩_bilibili$/, '')
-      }
-    }
-
-    // 2. Get Description
-    description = root.querySelector('meta[name="description"]')?.getAttribute('content') || 
-                      root.querySelector('meta[property="og:description"]')?.getAttribute('content') || 
-                      root.querySelector('meta[name="twitter:description"]')?.getAttribute('content') || ''
-    
-    // Decode & Clean up description
-    description = he.decode(description).trim()
-
-    // 3. Get Author (Fallback)
-    if (!author) {
-      // Strategy 1: Standard Meta Tags
-      author = root.querySelector('meta[name="author"]')?.getAttribute('content') || 
-               root.querySelector('meta[property="article:author"]')?.getAttribute('content') || 
-               root.querySelector('meta[name="twitter:creator"]')?.getAttribute('content') || ''
-
-      // Strategy 2: Platform Specific
-      if (!author) {
-        if (url.includes('youtube.com') || url.includes('youtu.be')) {
-          // YouTube: <link itemprop="name" content="...">
-          author = root.querySelector('link[itemprop="name"]')?.getAttribute('content') || 
-                   root.querySelector('meta[itemprop="author"]')?.getAttribute('content') || ''
-        } else if (url.includes('bilibili.com')) {
-          // Bilibili: <meta name="author" content="..."> works usually
-          // fallback to finding text content if SSR
-          // node-html-parser doesn't support complex CSS selectors like :contains, so stick to basic classes
-          if (!author) {
-              // Try to find common Bilibili author classes
-              // Note: Bilibili HTML is often dynamically rendered, so static fetch might miss some details
-              // But usually meta tags are present in initial HTML
-              author = root.querySelector('.up-name')?.text.trim() || 
-                       root.querySelector('.username')?.text.trim() || ''
-          }
-        } else if (url.includes('mp.weixin.qq.com')) {
-          // WeChat Articles
-          author = root.querySelector('meta[name="author"]')?.getAttribute('content') || 
-                   root.querySelector('.profile_nickname')?.text.trim() || 
-                   root.querySelector('#js_name')?.text.trim() || ''
-        }
-      }
-      
-      // Final cleanup
-      author = he.decode(author).trim()
-    }
-
-    // 4. Get Duration (YouTube only)
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      // Try to find duration in meta tags
-      // <meta itemprop="duration" content="PT12M34S">
-      const durationMeta = root.querySelector('meta[itemprop="duration"]')?.getAttribute('content')
-      if (durationMeta) {
-        // Convert ISO 8601 duration (PT12M34S) to HH:MM:SS or MM:SS
-        const match = durationMeta.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
-        if (match) {
-          let hours = parseInt((match[1] || '').replace('H', '') || '0')
-          let minutes = parseInt((match[2] || '').replace('M', '') || '0')
-          let seconds = parseInt((match[3] || '').replace('S', '') || '0')
-          
-          // Normalize (e.g. 131 minutes -> 2 hours 11 minutes)
-          if (seconds >= 60) {
-            minutes += Math.floor(seconds / 60)
-            seconds = seconds % 60
-          }
-          if (minutes >= 60) {
-            hours += Math.floor(minutes / 60)
-            minutes = minutes % 60
-          }
-          
-          const s = seconds.toString().padStart(2, '0')
-          const m = minutes.toString().padStart(2, '0')
-          
-          if (hours > 0) {
-            duration = `${hours}:${m}:${s}`
-          } else {
-             duration = `${minutes}:${s}`
+          title = he.decode(title).trim()
+          // Cleanup
+          if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            title = title.replace(/ - YouTube$/, '')
+          } else if (url.includes('bilibili.com')) {
+            title = title.replace(/_哔哩哔哩_bilibili$/, '')
           }
         }
+
+        // 2. Description
+        // Try meta tags first
+        if (!description) {
+            description = root.querySelector('meta[name="description"]')?.getAttribute('content') || 
+                          root.querySelector('meta[property="og:description"]')?.getAttribute('content') || 
+                          root.querySelector('meta[name="twitter:description"]')?.getAttribute('content') || ''
+            description = he.decode(description).trim()
+        }
+
+        // 3. Author (Fallback)
+        if (!author) {
+            author = root.querySelector('meta[name="author"]')?.getAttribute('content') || 
+                     root.querySelector('meta[property="article:author"]')?.getAttribute('content') || 
+                     root.querySelector('link[itemprop="name"]')?.getAttribute('content') || 
+                     root.querySelector('meta[itemprop="author"]')?.getAttribute('content') || ''
+            
+            if (!author && url.includes('bilibili.com')) {
+                author = root.querySelector('.up-name')?.text.trim() || 
+                         root.querySelector('.username')?.text.trim() || ''
+            }
+            author = he.decode(author).trim()
+        }
+
+        // 4. Cover Image (Fallback & High Res Upgrade)
+        if (!coverImage || (url.includes('youtube.com') || url.includes('youtu.be'))) {
+            // Check meta tags
+            const metaImage = root.querySelector('meta[property="og:image"]')?.getAttribute('content') || 
+                              root.querySelector('meta[name="twitter:image"]')?.getAttribute('content')
+            
+            if (metaImage) {
+                coverImage = metaImage
+            }
+
+            // For YouTube, try to get maxresdefault if we have the ID
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                 const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
+                 if (videoIdMatch && videoIdMatch[1]) {
+                     // We can't verify if maxres exists without checking, but hqdefault is safe. 
+                     // Or we can blindly trust maxresdefault if we want high quality.
+                     // The previous logic used maxresdefault, let's stick to it or rely on og:image which is usually high res for YT.
+                     // og:image is usually https://i.ytimg.com/vi/ID/maxresdefault.jpg
+                 }
+            }
+        }
+
+        // 5. Duration (The tricky part)
+        if (!duration) {
+            // Method A: Meta tag (ISO 8601)
+            const durationMeta = root.querySelector('meta[itemprop="duration"]')?.getAttribute('content')
+            if (durationMeta) {
+                const match = durationMeta.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
+                if (match) {
+                    let hours = parseInt((match[1] || '').replace('H', '') || '0')
+                    let minutes = parseInt((match[2] || '').replace('M', '') || '0')
+                    let seconds = parseInt((match[3] || '').replace('S', '') || '0')
+                    
+                    const s = seconds.toString().padStart(2, '0')
+                    const m = minutes.toString().padStart(2, '0')
+                    
+                    if (hours > 0) duration = `${hours}:${m}:${s}`
+                    else duration = `${minutes}:${s}`
+                }
+            }
+
+            // Method B: YouTube JSON Data (ytInitialPlayerResponse)
+            if (!duration && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+                const jsonMatch = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/)
+                if (jsonMatch) {
+                    try {
+                        const playerData = JSON.parse(jsonMatch[1])
+                        const details = playerData.videoDetails
+                        
+                        // While we are here, get other details if missing
+                        if (details) {
+                            if (!title) title = details.title
+                            if (!author) author = details.author
+                            if (!description && details.shortDescription) description = details.shortDescription
+
+                            if (details.lengthSeconds) {
+                                const secondsTotal = parseInt(details.lengthSeconds)
+                                const hours = Math.floor(secondsTotal / 3600)
+                                const minutes = Math.floor((secondsTotal % 3600) / 60)
+                                const seconds = secondsTotal % 60
+                                
+                                const s = seconds.toString().padStart(2, '0')
+                                const m = minutes.toString().padStart(2, '0')
+                                
+                                if (hours > 0) duration = `${hours}:${m}:${s}`
+                                else duration = `${minutes}:${s}`
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse ytInitialPlayerResponse:', e)
+                    }
+                }
+            }
+        }
       }
+    } catch (e) {
+      console.error('Direct parsing failed:', e)
     }
 
-    // 5. Get Cover Image (YouTube only - Fallback)
-    if (!coverImage && (url.includes('youtube.com') || url.includes('youtu.be'))) {
-      // Extract Video ID
-      const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
-      if (videoIdMatch && videoIdMatch[1]) {
-        const videoId = videoIdMatch[1]
-        // Prefer maxresdefault
-        coverImage = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-      }
-    }
-
-    // 6. Translate to Chinese (Simplified)
-    // Only translate description, KEEP title original -> Changed: Translate Title as "Chinese (English)"
+    // 6. Translation
     try {
+        // Translate Title: "Chinese (Original)"
         if (title) {
             const res = await translate(title, { to: 'zh-CN' })
-            // Only append original if translation is different
-            if (res.text !== title) {
+            if (res.text && res.text !== title) {
                 title = `${res.text} (${title})`
             }
         }
+        // Translate Description: "Chinese"
         if (description) {
              const res = await translate(description, { to: 'zh-CN' })
-             description = res.text
+             if (res.text) {
+                 description = res.text
+             }
         }
     } catch (translateError) {
         console.warn('Translation failed, using original text:', translateError)
-        // Fallback to original text is automatic since we modify the variables
     }
 
     return NextResponse.json({
