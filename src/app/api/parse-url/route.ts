@@ -45,41 +45,69 @@ export async function POST(request: Request) {
           coverImage = data.thumbnail_url
           // Note: oEmbed doesn't provide description or duration
           
-          // Strategy 0.5: Search Page Fallback for Duration & Description (Bypass bot detection)
+          // Strategy 0.5: Direct Video Page Parsing (Most reliable for Description & Duration without API Key)
           try {
              // Extract Video ID
              const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
              const videoId = videoIdMatch ? videoIdMatch[1] : null
              
              if (videoId) {
-                 const searchUrl = `https://www.youtube.com/results?search_query=${videoId}`
-                 const searchRes = await fetch(searchUrl, {
+                 const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
+                 const videoRes = await fetch(videoUrl, {
                      headers: {
-                         'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-                         'Accept-Language': 'en-US,en;q=0.9'
+                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                         'Accept-Language': 'en-US,en;q=0.9',
                      }
                  })
-                 const searchHtml = await searchRes.text()
+                 const videoHtml = await videoRes.text()
                  
-                 // Extract Duration
-                 // "lengthText":{"accessibility":{"accessibilityData":{"label":"3 minutes, 33 seconds"}},"simpleText":"3:33"}
-                 const durationMatch = searchHtml.match(/"lengthText":{.*?"simpleText":"(.*?)"}/)
-                 if (durationMatch) {
-                     duration = durationMatch[1]
+                 // Try to extract ytInitialPlayerResponse
+                 const jsonMatch = videoHtml.match(/ytInitialPlayerResponse\s*=\s*({.+?});/)
+                 if (jsonMatch) {
+                     try {
+                         const playerData = JSON.parse(jsonMatch[1])
+                         const details = playerData.videoDetails
+                         
+                         if (details) {
+                             // Get full description
+                             if (details.shortDescription) {
+                                 description = details.shortDescription
+                             }
+                             
+                             // Get duration (seconds) and format it
+                             if (details.lengthSeconds) {
+                                 const secondsTotal = parseInt(details.lengthSeconds)
+                                 const hours = Math.floor(secondsTotal / 3600)
+                                 const minutes = Math.floor((secondsTotal % 3600) / 60)
+                                 const seconds = secondsTotal % 60
+                                 
+                                 const s = seconds.toString().padStart(2, '0')
+                                 const m = minutes.toString().padStart(2, '0')
+                                 
+                                 if (hours > 0) {
+                                     duration = `${hours}:${m}:${s}`
+                                 } else {
+                                     duration = `${minutes}:${s}`
+                                 }
+                             }
+                             
+                             // Fallback title/author if oEmbed failed (unlikely but good to have)
+                             if (!title && details.title) title = details.title
+                             if (!author && details.author) author = details.author
+                         }
+                     } catch (e) {
+                         console.error('Failed to parse ytInitialPlayerResponse:', e)
+                     }
                  }
                  
-                 // Extract Description Snippet
-                 // "descriptionSnippet":{"runs":[{"text":"..."}]}
-                 // Note: This might be partial, but better than nothing
+                 // Fallback: Try meta tags if JSON failed but we have HTML
                  if (!description) {
-                     const descMatch = searchHtml.match(/"descriptionSnippet":{.*?"text":"(.*?)"/)
-                     if (descMatch) {
-                         description = descMatch[1]
-                     }
+                     const metaDesc = videoHtml.match(/<meta name="description" content="([^"]*)"/)
+                     if (metaDesc) description = he.decode(metaDesc[1])
                  }
              }
           } catch (e) {
-              console.error('YouTube Search Page fallback failed:', e)
+              console.error('YouTube Video Page fallback failed:', e)
           }
         }
       } catch (e) {

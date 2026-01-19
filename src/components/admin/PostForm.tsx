@@ -383,30 +383,13 @@ export function PostForm({ action, initialData, isEditing, defaultType, defaultC
           </div>
         )}
 
-        {/* Cover Image for Resources - Hidden Input but Preview Shown */}
+        {/* Cover Image for Resources - Hidden Input */}
         {(type === 'resource' || defaultType === 'resource') && (
-            <div className="space-y-2">
-              <div className="flex gap-4 items-start">
-                <input
-                  type="hidden"
-                  name="coverImage"
-                  value={coverImage}
-                />
-                {coverImage && (
-                  <div className="w-full h-40 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200 relative group">
-                    <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
-                    <button
-                        type="button"
-                        onClick={() => setCoverImage('')}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove Cover"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+          <input
+            type="hidden"
+            name="coverImage"
+            value={coverImage}
+          />
         )}
       </div>
 
