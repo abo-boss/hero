@@ -8,6 +8,8 @@ const notoSansSC = Noto_Sans_SC({ subsets: ['latin'], variable: '--font-noto-san
 
 import { getPageContent } from '@/app/actions/page-content'
 
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageContent()
   const title = content.find(c => c.page === 'home' && c.section === 'hero' && c.key === 'title')?.value || '阿波的学习库'

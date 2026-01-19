@@ -6,6 +6,8 @@ import { getAllResources, getAllPosts } from '@/lib/mdx'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const allResources = await getAllResources()
   const recentResources = allResources.slice(0, 3)
