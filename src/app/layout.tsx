@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const notoSansSC = Noto_Sans_SC({ subsets: ['latin'], variable: '--font-noto-sans' })
 
 export const metadata: Metadata = {
-  title: '阿波的超级个体空间',
+  title: '阿波的学习库',
   description: '我整合了最优质的AI学习资源与内容创作策略，助你高效产出。',
 }
 

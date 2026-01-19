@@ -4,7 +4,7 @@ import { getPageContent } from '@/app/actions/page-content'
 
 export async function PersonalHero() {
   const content = await getPageContent()
-  const title = content.find((c: any) => c.page === 'home' && c.section === 'hero' && c.key === 'title')?.value || '阿波的超级个体空间'
+  const title = content.find((c: any) => c.page === 'home' && c.section === 'hero' && c.key === 'title')?.value || '阿波的学习库'
   const description = content.find((c: any) => c.page === 'home' && c.section === 'hero' && c.key === 'description')?.value || '探索 AI 技术，打造超级个体'
 
   return (
