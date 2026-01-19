@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 import { PersonalHero } from '@/components/PersonalHero'
 import { ResourceCard } from '@/components/ResourceCard'
 import { Navbar } from '@/components/Navbar'
@@ -9,20 +7,11 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 export default async function Home() {
-  let recentResources: any[] = []
-  let recentPosts: any[] = []
-  try {
-    const allResources = await getAllResources()
-    recentResources = allResources.slice(0, 3)
-  } catch (e) {
-    console.error('getAllResources error:', e)
-  }
-  try {
-    const allPosts = await getAllPosts('blog')
-    recentPosts = allPosts.slice(0, 3)
-  } catch (e) {
-    console.error('getAllPosts error:', e)
-  }
+  const allResources = await getAllResources()
+  const recentResources = allResources.slice(0, 3)
+  
+  const allPosts = await getAllPosts('blog')
+  const recentPosts = allPosts.slice(0, 3)
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-gradient-to-br from-slate-50 via-white to-slate-100">
