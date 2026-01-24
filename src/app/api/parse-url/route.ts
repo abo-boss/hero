@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     let duration = ''
     let coverImage = ''
     let keywords: string[] = []
+    let tags: string[] = []
 
     // Common headers for requests
     const headers = {
@@ -129,12 +130,28 @@ export async function POST(request: Request) {
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
                  const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
                  if (videoIdMatch && videoIdMatch[1]) {
-                     // We can't verify if maxres exists without checking, but hqdefault is safe. 
-                     // Or we can blindly trust maxresdefault if we want high quality.
-                     // The previous logic used maxresdefault, let's stick to it or rely on og:image which is usually high res for YT.
-                     // og:image is usually https://i.ytimg.com/vi/ID/maxresdefault.jpg
+                    // keep og:image
                  }
             }
+          
+          if (!coverImage) {
+            const iconHref = root.querySelector('link[rel="icon"]')?.getAttribute('href') ||
+                             root.querySelector('link[rel="shortcut icon"]')?.getAttribute('href') ||
+                             root.querySelector('link[rel="apple-touch-icon"]')?.getAttribute('href') ||
+                             ''
+            if (iconHref) {
+              try {
+                const u = new URL(url)
+                const iconUrl = iconHref.startsWith('http') ? iconHref : `${u.protocol}//${u.host}${iconHref.startsWith('/') ? iconHref : `/${iconHref}`}`
+                coverImage = iconUrl
+              } catch {}
+            } else {
+              try {
+                const u = new URL(url)
+                coverImage = `https://www.google.com/s2/favicons?sz=128&domain=${u.hostname}`
+              } catch {}
+            }
+          }
         }
 
         // 5. Duration (The tricky part)
@@ -279,16 +296,38 @@ export async function POST(request: Request) {
         }
     }
 
-    // 7. Translation
+    // 7. Product tagging and brand detection
     try {
-        // Translate Title: "Chinese (Original)"
-        if (title) {
-            const res = await translate(title, { to: 'zh-CN' })
-            if (res.text && res.text !== title) {
-                title = `${res.text} (${title})`
-            }
+      const u = new URL(url)
+      const host = u.hostname
+      const parts = host.split('.')
+      const base = parts.length >= 2 ? parts[parts.length - 2] : parts[0]
+      let brand = base.charAt(0).toUpperCase() + base.slice(1)
+      if (host.includes('google.com')) brand = 'Google'
+      if (host.includes('openai.com')) brand = 'OpenAI'
+      if (host.includes('perplexity.ai')) brand = 'Perplexity'
+      if (host.includes('cursor.sh')) brand = 'Cursor'
+      tags = ['AI产品', brand]
+      if (!author) author = brand
+      if (host.includes('google.com') && parts[0] && parts[0].toLowerCase() === 'notebooklm') {
+        if (!title || /登录|Sign in|Login/i.test(title)) {
+          title = 'NotebookLM'
         }
-        // Translate Description: "Chinese"
+        if (!description || /登录|Sign in|Login/i.test(description)) {
+          description = 'Google 推出的个性化 AI 笔记本，可以上传文档生成问答、摘要和音频概览。'
+        }
+      }
+    } catch {}
+
+    // 8. Translation
+    try {
+        const isVideo = url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')
+        if (isVideo && title) {
+          const res = await translate(title, { to: 'zh-CN' })
+          if (res.text && res.text !== title) {
+              title = `${res.text} (${title})`
+          }
+        }
         if (description) {
              const res = await translate(description, { to: 'zh-CN' })
              if (res.text) {
@@ -304,7 +343,8 @@ export async function POST(request: Request) {
       description: description || '',
       author: author || '',
       duration: duration || '',
-      coverImage: coverImage || ''
+      coverImage: coverImage || '',
+      tags
     })
 
   } catch (error) {

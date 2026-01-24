@@ -154,6 +154,9 @@ export function PostForm({ action, initialData, isEditing, defaultType, defaultC
       if (data.coverImage) {
         setCoverImage(data.coverImage)
       }
+      if (data.tags && Array.isArray(data.tags) && data.tags.length > 0) {
+        setTags(data.tags.join(', '))
+      }
       
     } catch (error) {
       console.error(error)
