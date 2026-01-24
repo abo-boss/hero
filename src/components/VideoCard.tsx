@@ -120,7 +120,6 @@ export function VideoCard({ post }: VideoCardProps) {
               </span>
             ))}
           </div>
-          <span className="text-xs text-slate-400 shrink-0 mt-1">{post.date}</span>
         </div>
 
         <a 
