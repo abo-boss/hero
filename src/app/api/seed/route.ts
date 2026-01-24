@@ -46,6 +46,16 @@ const toolsToRestore = [
     coverImage: 'https://logo.clearbit.com/perplexity.ai'
   },
   {
+    title: 'NotebookLM',
+    description: 'Google 推出的个性化 AI 笔记本，可以上传文档生成问答、摘要和音频概览。',
+    link: 'https://notebooklm.google.com/',
+    author: 'Google',
+    tags: 'AI产品,Google',
+    category: 'ai',
+    resourceType: 'tool',
+    coverImage: 'https://www.google.com/s2/favicons?sz=128&domain=notebooklm.google.com'
+  },
+  {
     title: 'UrbanistAI',
     description: '专注于城市规划和设计的生成式 AI 平台，帮助规划师快速可视化城市改造方案和未来场景。',
     link: 'https://urbanistai.com/',
