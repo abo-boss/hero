@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 import { getPostBySlug, ResourceType } from '@/lib/mdx'
 import { MDXContent } from '@/components/MDXContent'
@@ -7,6 +8,8 @@ import { notFound } from 'next/navigation'
 import { serialize } from 'next-mdx-remote/serialize'
 
 export async function generateStaticParams() {
+  // Since we force-dynamic, we don't strictly need this to run at build time.
+  // But Next.js might still call it. Return empty to avoid build errors if DB is unreachable.
   return []
 }
 

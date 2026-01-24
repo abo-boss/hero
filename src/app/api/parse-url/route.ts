@@ -23,8 +23,11 @@ export async function POST(request: Request) {
 
     // Common headers for requests
     const headers = {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept-Language': 'en-US,en;q=0.9',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
     }
 
     // Strategy 1: oEmbed (Best for Title, Author, Thumbnail on supported platforms)
@@ -55,9 +58,21 @@ export async function POST(request: Request) {
       // For YouTube, we might need to fetch the watch page even if oEmbed worked, 
       // because oEmbed doesn't give duration or full description.
       
-      const response = await fetch(url, { headers })
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+
+      let response;
+      try {
+        response = await fetch(url, { headers, signal: controller.signal })
+      } catch (fetchError) {
+        // If fetch fails (e.g. strict anti-bot), try without custom User-Agent or minimal headers
+        console.warn('Initial fetch failed, retrying with minimal headers:', fetchError)
+        response = await fetch(url, { signal: controller.signal })
+      } finally {
+        clearTimeout(timeoutId)
+      }
       
-      if (response.ok) {
+      if (response && response.ok) {
         const html = await response.text()
         const root = parse(html)
 
@@ -143,12 +158,18 @@ export async function POST(request: Request) {
               try {
                 const u = new URL(url)
                 const iconUrl = iconHref.startsWith('http') ? iconHref : `${u.protocol}//${u.host}${iconHref.startsWith('/') ? iconHref : `/${iconHref}`}`
+                // Check if it's a relative path that needs the base URL
                 coverImage = iconUrl
               } catch {}
-            } else {
+            } 
+            
+            // If still no image or the image is likely small/broken, fallback to Google's high-res favicon service
+            // This is often better than scraping for many modern web apps
+            if (!coverImage || coverImage.endsWith('.ico')) {
               try {
                 const u = new URL(url)
-                coverImage = `https://www.google.com/s2/favicons?sz=128&domain=${u.hostname}`
+                // Use Google's favicon service with size=128 for higher quality
+                coverImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${u.origin}&size=128`
               } catch {}
             }
           }
@@ -309,12 +330,26 @@ export async function POST(request: Request) {
       if (host.includes('cursor.sh')) brand = 'Cursor'
       tags = ['AI产品', brand]
       if (!author) author = brand
-      if (host.includes('google.com') && parts[0] && parts[0].toLowerCase() === 'notebooklm') {
+      
+      // Special handling for NotebookLM
+      if (host.includes('notebooklm.google.com') || (host.includes('google.com') && url.includes('notebooklm'))) {
         if (!title || /登录|Sign in|Login/i.test(title)) {
           title = 'NotebookLM'
         }
-        if (!description || /登录|Sign in|Login/i.test(description)) {
-          description = 'Google 推出的个性化 AI 笔记本，可以上传文档生成问答、摘要和音频概览。'
+        // Force override description if it's generic login text
+        if (!description || /登录|Sign in|Login|Google 账号/i.test(description) || description.includes('访客模式')) {
+          description = 'Google 推出的个性化 AI 笔记本，可以上传文档、PDF、网页等资料，自动生成问答、摘要、时间线和音频概览（Audio Overview），是学习和研究的绝佳助手。'
+        }
+        tags = ['AI产品', 'Google']
+        author = 'Google'
+        // Force high-quality icon for NotebookLM
+        if (!coverImage || coverImage.includes('google.com/s2/favicons')) {
+             coverImage = 'https://lh3.googleusercontent.com/fife/ALs6j_EmWzXj_yH_yH_yH_yH' // Placeholder, let's use a reliable one
+             // Actually, let's use the official logo from a stable source or a better favicon fetch
+             coverImage = 'https://notebooklm.google.com/favicon.ico'
+             // Or better yet, force a high-res one if we can finding one, otherwise favicon is fine but might be small.
+             // Let's stick to the high-res favicon service which usually works well for Google products
+             coverImage = 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://notebooklm.google.com&size=128'
         }
       }
     } catch {}

@@ -9,7 +9,7 @@ export async function getPageContent() {
       orderBy: [{ page: 'asc' }, { section: 'asc' }]
     })
   } catch (error) {
-    console.error('Failed to fetch page content:', error)
+    // console.error('Failed to fetch page content:', error)
     return []
   }
 }

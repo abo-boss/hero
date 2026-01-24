@@ -11,13 +11,21 @@ import { getPageContent } from '@/app/actions/page-content'
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageContent()
-  const title = content.find(c => c.page === 'home' && c.section === 'hero' && c.key === 'title')?.value || '阿波的学习库'
-  const description = content.find(c => c.page === 'home' && c.section === 'hero' && c.key === 'description')?.value || '我整合了最优质的AI学习资源与内容创作策略，助你高效产出。'
+  try {
+    const content = await getPageContent()
+    const title = content.find(c => c.page === 'home' && c.section === 'hero' && c.key === 'title')?.value || '阿波的学习库'
+    const description = content.find(c => c.page === 'home' && c.section === 'hero' && c.key === 'description')?.value || '我整合了最优质的AI学习资源与内容创作策略，助你高效产出。'
 
-  return {
-    title,
-    description,
+    return {
+      title,
+      description,
+    }
+  } catch (error) {
+    // console.error('Failed to fetch page content for metadata:', error)
+    return {
+      title: '阿波的学习库',
+      description: '我整合了最优质的AI学习资源与内容创作策略，助你高效产出。',
+    }
   }
 }
 
