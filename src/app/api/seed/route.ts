@@ -13,7 +13,7 @@ const toolsToRestore = [
     tags: 'AI产品,Google,Note-taking',
     category: 'ai',
     resourceType: 'tool',
-    coverImage: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://notebooklm.google.com&size=128'
+    coverImage: 'https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/color/notebook-lm.png'
   },
   {
     title: 'Cursor',
