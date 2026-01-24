@@ -196,7 +196,7 @@ export function ResourceFilter({ posts, tagPresets }: { posts: Post[], tagPreset
                </div>
              </div>
 
-             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {getVideoPosts().map(post => (
                   <VideoCard key={post.slug} post={post} />
                 ))}
@@ -280,7 +280,7 @@ export function ResourceFilter({ posts, tagPresets }: { posts: Post[], tagPreset
                </div>
              </div>
 
-             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {getContentVideoPosts().map(post => (
                   <VideoCard key={post.slug} post={post} />
                 ))}
