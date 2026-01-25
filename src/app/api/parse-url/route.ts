@@ -356,17 +356,25 @@ export async function POST(request: Request) {
 
     // 8. Translation
     try {
-        const isVideo = url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')
-        if (isVideo && title) {
-          const res = await translate(title, { to: 'zh-CN' })
-          if (res.text && res.text !== title) {
-              title = `${res.text} (${title})`
+        if (title) {
+          // Detect if title is likely already Chinese (contains Chinese characters)
+          const hasChinese = /[\u4e00-\u9fa5]/.test(title)
+          
+          if (!hasChinese) {
+            const res = await translate(title, { to: 'zh-CN' })
+            if (res.text && res.text !== title) {
+                title = `${res.text} (${title})`
+            }
           }
         }
+        
         if (description) {
-             const res = await translate(description, { to: 'zh-CN' })
-             if (res.text) {
-                 description = res.text
+             const hasChineseDesc = /[\u4e00-\u9fa5]/.test(description)
+             if (!hasChineseDesc) {
+               const res = await translate(description, { to: 'zh-CN' })
+               if (res.text) {
+                   description = res.text
+               }
              }
         }
     } catch (translateError) {

@@ -21,7 +21,7 @@ export function PodcastCard({ post }: PodcastCardProps) {
         <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
           {tagLabel}
         </span>
-        <span className="text-xs text-slate-400 font-medium">{post.date}</span>
+        <span className="text-xs text-slate-400 font-medium">{post.author || post.date}</span>
       </div>
 
       {/* Content */}
