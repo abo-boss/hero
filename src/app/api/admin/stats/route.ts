@@ -17,19 +17,19 @@ export async function GET() {
     const sevenDaysAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000)
 
     // 1. 总 PV 和 UV
-    const totalPV = await prisma.visit.count()
+    const totalPV = await (prisma as any).visit.count()
     const totalUVResult = await prisma.$queryRaw`SELECT COUNT(DISTINCT ip) as count FROM "Visit"`
     const totalUV = Number((totalUVResult as any)[0].count)
 
     // 2. 今日 PV 和 UV
-    const todayPV = await prisma.visit.count({
+    const todayPV = await (prisma as any).visit.count({
       where: { createdAt: { gte: todayStart } }
     })
     const todayUVResult = await prisma.$queryRaw`SELECT COUNT(DISTINCT ip) as count FROM "Visit" WHERE "createdAt" >= ${todayStart}`
     const todayUV = Number((todayUVResult as any)[0].count)
 
     // 3. 热门页面 Top 10
-    const topPages = await prisma.visit.groupBy({
+    const topPages = await (prisma as any).visit.groupBy({
       by: ['path'],
       _count: {
         path: true
@@ -61,7 +61,7 @@ export async function GET() {
         todayPV,
         todayUV
       },
-      topPages: topPages.map(p => ({
+      topPages: topPages.map((p: any) => ({
         path: p.path,
         count: p._count.path
       })),

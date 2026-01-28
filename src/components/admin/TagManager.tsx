@@ -29,7 +29,7 @@ export function TagManager({ contextKey, onTagsChange }: TagManagerProps) {
       }
     })
     return () => { mounted = false }
-  }, [contextKey])
+  }, [contextKey, onTagsChange])
 
   const handleSave = async (newTags: string[]) => {
     setSaving(true)

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     // 异步写入数据库，不阻塞响应
-    await prisma.visit.create({
+    await (prisma as any).visit.create({
       data: {
         path,
         ip,
