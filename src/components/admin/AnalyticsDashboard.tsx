@@ -49,7 +49,22 @@ export function AnalyticsDashboard() {
     </div>
   }
 
-  if (!stats) return null
+  if (!stats) {
+    return (
+      <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center">
+        <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto mb-4">
+          <BarChart3 className="w-6 h-6" />
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 mb-2">访问统计暂未就绪</h3>
+        <p className="text-slate-500 text-sm max-w-md mx-auto mb-6">
+          代码已部署，但数据库中尚未创建统计表。请确保已执行数据库同步指令。
+        </p>
+        <div className="bg-slate-900 text-slate-100 p-3 rounded-lg text-xs font-mono inline-block">
+          npx prisma db push
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8">
