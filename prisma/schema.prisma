@@ -61,3 +61,17 @@ model TagPreset {
   tags      String   // JSON string or comma separated
   updatedAt DateTime @updatedAt
 }
+
+model Visit {
+  id        String   @id @default(cuid())
+  path      String   // 访问路径
+  ip        String?  // 用户 IP
+  userAgent String?  // 浏览器信息
+  referer   String?  // 来源
+  country   String?  // 国家（Vercel 提供）
+  city      String?  // 城市（Vercel 提供）
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { FileText, Database, Users } from 'lucide-react'
 import Link from 'next/link'
 import { getPosts } from '@/app/actions/content'
+import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard'
 
 export default async function AdminDashboard() {
   const posts = await getPosts()
@@ -49,6 +50,8 @@ export default async function AdminDashboard() {
           <div className="text-3xl font-bold text-slate-900">{blogCount}</div>
         </div>
       </div>
+
+      <AnalyticsDashboard />
       
       <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center py-20">
          <p className="text-slate-500 mb-4">从左侧边栏选择一个选项来管理内容。</p>

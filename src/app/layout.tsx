@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const notoSansSC = Noto_Sans_SC({ subsets: ['latin'], variable: '--font-noto-sans' })
 
 import { getPageContent } from '@/app/actions/page-content'
+import { AnalyticsTracker } from '@/components/AnalyticsTracker'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={cn(inter.variable, notoSansSC.variable, 'font-sans antialiased min-h-screen bg-white text-slate-900')}>
+        <AnalyticsTracker />
         {children}
       </body>
     </html>
