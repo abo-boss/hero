@@ -71,25 +71,25 @@ export function AnalyticsDashboard() {
       {/* 核心指标卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard 
-          title="今日 PV" 
+          title="今日浏览量" 
           value={stats.summary.todayPV} 
           icon={<Eye className="w-4 h-4" />} 
           color="blue"
         />
         <StatCard 
-          title="今日 UV" 
+          title="今日访客数" 
           value={stats.summary.todayUV} 
           icon={<Users className="w-4 h-4" />} 
           color="purple"
         />
         <StatCard 
-          title="累计 PV" 
+          title="累计浏览量" 
           value={stats.summary.totalPV} 
           icon={<BarChart3 className="w-4 h-4" />} 
           color="green"
         />
         <StatCard 
-          title="累计 UV" 
+          title="累计访客数" 
           value={stats.summary.totalUV} 
           icon={<TrendingUp className="w-4 h-4" />} 
           color="orange"
