@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // 1 hour
 export const runtime = 'nodejs'
 import { getAllResources } from '@/lib/mdx'
 import { Navbar } from '@/components/Navbar'

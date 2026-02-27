@@ -5,7 +5,7 @@ import { getPageContent } from '@/app/actions/page-content'
 import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // 1 hour
 
 export default async function AboutPage() {
   let content: any[] = []

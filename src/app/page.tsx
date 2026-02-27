@@ -6,7 +6,7 @@ import { getAllResources, getAllPosts } from '@/lib/mdx'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // 1 hour
 
 export default async function Home() {
   const allResources = await getAllResources()

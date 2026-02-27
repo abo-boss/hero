@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // 1 hour
 export const runtime = 'nodejs'
 import { getPostBySlug, ResourceType } from '@/lib/mdx'
 import { MDXContent } from '@/components/MDXContent'
