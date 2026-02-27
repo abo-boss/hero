@@ -1,6 +1,8 @@
 
 'use client'
 
+import Link from 'next/link'
+
 interface Visit {
   id: string
   path: string
@@ -9,6 +11,24 @@ interface Visit {
   city: string | null
   createdAt: string
   userAgent: string | null
+}
+
+// 简单的国家代码转中文映射
+const COUNTRY_MAP: Record<string, string> = {
+  'CN': '中国',
+  'US': '美国',
+  'JP': '日本',
+  'HK': '中国香港',
+  'TW': '中国台湾',
+  'SG': '新加坡',
+  'GB': '英国',
+  'DE': '德国',
+  'FR': '法国',
+  'KR': '韩国',
+  'NL': '荷兰',
+  'RU': '俄罗斯',
+  'CA': '加拿大',
+  'AU': '澳大利亚'
 }
 
 export function RecentVisits({ visits }: { visits: Visit[] }) {
@@ -31,7 +51,6 @@ export function RecentVisits({ visits }: { visits: Visit[] }) {
               <th className="pb-3 pl-2 font-medium">时间</th>
               <th className="pb-3 font-medium">路径</th>
               <th className="pb-3 font-medium">地点</th>
-              <th className="pb-3 font-medium">IP</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 text-sm">
@@ -44,23 +63,31 @@ export function RecentVisits({ visits }: { visits: Visit[] }) {
                 minute: '2-digit'
               })
               
-              const location = [visit.country, visit.city].filter(Boolean).join(' ') || '-'
+              // 处理城市乱码问题 (URL Decode) 并尽可能汉化国家
+              let city = visit.city
+              try {
+                if (city) city = decodeURIComponent(city)
+              } catch (e) {}
+
+              const country = visit.country ? (COUNTRY_MAP[visit.country] || visit.country) : ''
+              const location = [country, city].filter(Boolean).join(' ') || '-'
               
               return (
                 <tr key={visit.id} className="group hover:bg-slate-50 transition-colors">
                   <td className="py-3 pl-2 text-slate-500 whitespace-nowrap font-mono text-xs w-32">
                     {timeStr}
                   </td>
-                  <td className="py-3 pr-4 text-slate-700 font-medium max-w-[200px] truncate" title={visit.path}>
-                    <span className="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-600 font-mono">
+                  <td className="py-3 pr-4 text-slate-700 font-medium max-w-[300px] truncate" title={visit.path}>
+                    <Link 
+                      href={visit.path} 
+                      target="_blank"
+                      className="inline-block bg-slate-100 hover:bg-blue-50 hover:text-blue-600 transition-colors px-2 py-0.5 rounded text-xs text-slate-600 font-mono truncate max-w-full"
+                    >
                       {visit.path}
-                    </span>
+                    </Link>
                   </td>
-                  <td className="py-3 pr-4 text-slate-600 w-32 truncate" title={location}>
+                  <td className="py-3 pr-4 text-slate-600 w-48 truncate" title={location}>
                     {location}
-                  </td>
-                  <td className="py-3 text-slate-400 font-mono text-xs w-32">
-                    {visit.ip || '-'}
                   </td>
                 </tr>
               )
