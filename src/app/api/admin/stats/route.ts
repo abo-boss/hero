@@ -43,16 +43,48 @@ export async function GET() {
     })
 
     // 4. 最近 7 天趋势
-    const trend = await prisma.$queryRaw`
-      SELECT 
-        TO_CHAR("createdAt", 'YYYY-MM-DD') as date,
-        COUNT(*) as pv,
-        COUNT(DISTINCT ip) as uv
-      FROM "Visit"
-      WHERE "createdAt" >= ${sevenDaysAgo}
-      GROUP BY date
-      ORDER BY date ASC
-    `
+    const recentVisits = await (prisma as any).visit.findMany({
+      where: {
+        createdAt: {
+          gte: sevenDaysAgo
+        }
+      },
+      select: {
+        createdAt: true,
+        ip: true
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    })
+
+    const trendMap = new Map<string, { pv: number, ips: Set<string> }>()
+    
+    recentVisits.forEach((v: any) => {
+      // Use local time formatting to match the 'todayStart' logic
+      const year = v.createdAt.getFullYear()
+      const month = String(v.createdAt.getMonth() + 1).padStart(2, '0')
+      const day = String(v.createdAt.getDate()).padStart(2, '0')
+      const dateStr = `${year}-${month}-${day}`
+      
+      if (!trendMap.has(dateStr)) {
+        trendMap.set(dateStr, { pv: 0, ips: new Set() })
+      }
+      
+      const entry = trendMap.get(dateStr)!
+      entry.pv++
+      if (v.ip) {
+        entry.ips.add(v.ip)
+      }
+    })
+
+    const trend = Array.from(trendMap.entries())
+      .map(([date, data]) => ({
+        date,
+        pv: data.pv,
+        uv: data.ips.size
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date))
 
     return NextResponse.json({
       summary: {
@@ -65,11 +97,7 @@ export async function GET() {
         path: p.path,
         count: p._count.path
       })),
-      trend: (trend as any).map((t: any) => ({
-        date: t.date,
-        pv: Number(t.pv),
-        uv: Number(t.uv)
-      }))
+      trend
     })
   } catch (error) {
     console.error('Stats API error:', error)
