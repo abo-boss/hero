@@ -4,10 +4,7 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { getPostBySlug } from '@/app/actions/content'
 import { notFound } from 'next/navigation'
-import { serialize } from 'next-mdx-remote/serialize'
 import { MDXContent } from '@/components/MDXContent'
-import rehypeSlug from 'rehype-slug'
-import remarkBreaks from 'remark-breaks'
 import { getTableOfContents } from '@/lib/toc'
 import { TableOfContents } from '@/components/TableOfContents'
 
@@ -21,15 +18,8 @@ export default async function BlogPage({ params }: { params: { slug: string } })
     }
     
     // 1. 提取目录数据
+    // Note: getTableOfContents expects raw markdown string
     const toc = getTableOfContents(post.content)
-
-    // 2. MDX 序列化配置
-    const mdxSource = await serialize(post.content, {
-      mdxOptions: {
-        rehypePlugins: [rehypeSlug], // 自动生成标题 ID
-        remarkPlugins: [remarkBreaks], // 还原换行风格
-      },
-    })
 
     // 格式化日期
     const date = new Date(post.date).toLocaleDateString('zh-CN', {
@@ -82,7 +72,7 @@ export default async function BlogPage({ params }: { params: { slug: string } })
                 prose-img:rounded-xl prose-img:shadow-sm
                 prose-blockquote:border-l-4 prose-blockquote:border-slate-200 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-500
                 prose-li:text-slate-600">
-                 <MDXContent source={mdxSource} />
+                 <MDXContent source={post.content} />
               </div>
             </article>
 

@@ -5,7 +5,6 @@ import { MDXContent } from '@/components/MDXContent'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { notFound } from 'next/navigation'
-import { serialize } from 'next-mdx-remote/serialize'
 
 export async function generateStaticParams() {
   // Since we force-dynamic, we don't strictly need this to run at build time.
@@ -25,7 +24,6 @@ export default async function ResourcePage({ params }: { params: { category: str
     if (!post) {
       notFound()
     }
-    const mdxSource = await serialize(post.content)
 
     return (
       <div className="min-h-screen flex flex-col font-sans">
@@ -51,7 +49,7 @@ export default async function ResourcePage({ params }: { params: { category: str
                   )}
                </div>
              </div>
-             <MDXContent source={mdxSource} />
+             <MDXContent source={post.content} />
            </article>
         </main>
         <Footer />

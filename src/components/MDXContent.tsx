@@ -1,5 +1,7 @@
-'use client'
-import { MDXRemote } from 'next-mdx-remote'
+
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import rehypeSlug from 'rehype-slug'
+import remarkBreaks from 'remark-breaks'
 
 const components = {
   h1: (props: any) => <h1 className="text-3xl font-bold mt-8 mb-4 text-slate-900" {...props} />,
@@ -16,10 +18,19 @@ const components = {
   hr: (props: any) => <hr className="my-8 border-slate-200" {...props} />,
 }
 
-export function MDXContent({ source }: { source: any }) {
+export function MDXContent({ source }: { source: string }) {
   return (
     <div className="mdx-content">
-      <MDXRemote {...source} components={components} />
+      <MDXRemote 
+        source={source} 
+        components={components}
+        options={{
+          mdxOptions: {
+            remarkPlugins: [remarkBreaks],
+            rehypePlugins: [rehypeSlug],
+          }
+        }}
+      />
     </div>
   )
 }
