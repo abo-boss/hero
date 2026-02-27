@@ -88,13 +88,24 @@ export function ResourceFilter({ posts, tagPresets }: { posts: Post[], tagPreset
   // 数据源分拣
   const getVideoPosts = () => {
     // 筛选 category='ai' 且 resourceType='video'
-    let videos = posts.filter(p => p.category === CATEGORIES.AI && p.resourceType === RESOURCE_TYPES.VIDEO)
-    if (activeVideoSubFilter === 'featured') {
-      return getDiversePosts(videos, videoFilters)
+    let videos = posts.filter(p => p.category === CATEGORIES.AI && p.resourceType === 'video')
+    
+    // 如果没有视频，尝试从 tags 查找
+    if (videos.length === 0) {
+       videos = posts.filter(p => p.category === CATEGORIES.AI && p.tags?.includes('video'))
     }
+
+    if (activeVideoSubFilter === 'featured') {
+      // featured 逻辑: 优先取不同标签的内容，保持多样性
+      const diverse = getDiversePosts(videos, videoFilters)
+      return diverse.length > 0 ? diverse : videos.slice(0, 6)
+    }
+    
     if (activeVideoSubFilter === 'all') {
       return videos
     }
+    
+    // 按选中的标签筛选
     return videos.filter(p => p.tags?.includes(activeVideoSubFilter))
   }
 
@@ -132,12 +143,16 @@ export function ResourceFilter({ posts, tagPresets }: { posts: Post[], tagPreset
   }
 
   const getOtherPosts = () => {
-    if (activeCategory === CATEGORIES.ALL) {
-      // 全部分类展示所有资源（按时间倒序）
-      return posts
+    // 筛选逻辑:
+    // 1. 如果是 ALL，返回所有资源
+    // 2. 如果是其他分类，返回该分类下的资源
+    let result = posts
+    if (activeCategory !== CATEGORIES.ALL) {
+      result = posts.filter(p => p.category === activeCategory)
     }
-    // 其他具体分类
-    return posts.filter(p => p.category === activeCategory)
+    
+    // 按时间倒序
+    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 
   return (
