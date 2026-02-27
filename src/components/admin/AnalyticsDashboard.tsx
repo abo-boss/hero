@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Eye, Users, BarChart3, TrendingUp } from 'lucide-react'
+import { RecentVisits } from './RecentVisits'
 
 interface Stats {
   summary: {
@@ -19,6 +20,7 @@ interface Stats {
     pv: number
     uv: number
   }[]
+  latestVisits?: any[]
 }
 
 export function AnalyticsDashboard() {
@@ -98,14 +100,14 @@ export function AnalyticsDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 热门页面表格 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-full">
           <h3 className="text-lg font-bold text-slate-900 mb-6">热门页面 Top 10</h3>
           <div className="space-y-4">
             {stats.topPages.map((page, index) => (
               <div key={page.path} className="flex items-center justify-between group">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <span className="text-xs font-bold text-slate-300 w-4">{index + 1}</span>
-                  <span className="text-sm text-slate-600 truncate group-hover:text-blue-600 transition-colors">
+                  <span className="text-sm text-slate-600 truncate group-hover:text-blue-600 transition-colors max-w-[200px]" title={page.path}>
                     {page.path === '/' ? '首页' : page.path}
                   </span>
                 </div>
@@ -113,7 +115,7 @@ export function AnalyticsDashboard() {
                   <div className="h-1.5 bg-slate-100 rounded-full w-24 overflow-hidden">
                     <div 
                       className="h-full bg-blue-500 rounded-full" 
-                      style={{ width: `${(page.count / stats.topPages[0].count) * 100}%` }}
+                      style={{ width: `${stats.topPages[0].count > 0 ? (page.count / stats.topPages[0].count) * 100 : 0}%` }}
                     ></div>
                   </div>
                   <span className="text-xs font-bold text-slate-900 w-8 text-right">{page.count}</span>
@@ -123,26 +125,26 @@ export function AnalyticsDashboard() {
           </div>
         </div>
 
-        {/* 7天趋势简图 (纯 CSS 实现) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        {/* 7天趋势简图 */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-full">
           <h3 className="text-lg font-bold text-slate-900 mb-6">最近 7 天趋势</h3>
-          <div className="flex items-end justify-between h-48 gap-2 pt-4">
+          <div className="flex items-end justify-between h-48 gap-2 pt-4 pb-2">
             {stats.trend.map((day) => {
               const maxPV = Math.max(...stats.trend.map(d => d.pv), 1)
               const height = (day.pv / maxPV) * 100
               return (
-                <div key={day.date} className="flex-1 flex flex-col items-center gap-2 group relative">
-                  <div className="w-full bg-slate-50 rounded-t-lg relative overflow-hidden flex items-end h-full">
+                <div key={day.date} className="flex-1 h-full flex flex-col items-center justify-end gap-2 group relative">
+                  <div className="w-full relative flex-1 flex items-end">
                     <div 
                       className="w-full bg-blue-500/20 group-hover:bg-blue-500/40 transition-all rounded-t-sm" 
                       style={{ height: `${height}%` }}
                     ></div>
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                      {day.date}: {day.pv} PV / {day.uv} UV
-                    </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 rotate-45 mt-2 origin-left whitespace-nowrap">
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                    {day.date}: {day.pv} PV / {day.uv} UV
+                  </div>
+                  <span className="text-[10px] text-slate-400 rotate-45 origin-left translate-y-2 whitespace-nowrap">
                     {day.date.split('-').slice(1).join('/')}
                   </span>
                 </div>
@@ -151,12 +153,19 @@ export function AnalyticsDashboard() {
           </div>
         </div>
       </div>
+
+      {/* 最近访问记录 */}
+      {stats.latestVisits && (
+        <div className="mt-8">
+          <RecentVisits visits={stats.latestVisits} />
+        </div>
+      )}
     </div>
   )
 }
 
-function StatCard({ title, value, icon, color }: { title: string, value: number, icon: React.ReactNode, color: 'blue' | 'purple' | 'green' | 'orange' }) {
-  const colors = {
+function StatCard({ title, value, icon, color }: { title: string, value: number, icon: React.ReactNode, color: string }) {
+  const colors: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-500',
     purple: 'bg-purple-50 text-purple-500',
     green: 'bg-green-50 text-green-500',

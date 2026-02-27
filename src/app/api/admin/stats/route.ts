@@ -86,6 +86,23 @@ export async function GET() {
       }))
       .sort((a, b) => a.date.localeCompare(b.date))
 
+    // 5. 最近 20 条访问记录
+    const latestVisits = await (prisma as any).visit.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 20,
+      select: {
+        id: true,
+        path: true,
+        ip: true,
+        country: true,
+        city: true,
+        createdAt: true,
+        userAgent: true
+      }
+    })
+
     return NextResponse.json({
       summary: {
         totalPV,
@@ -97,7 +114,8 @@ export async function GET() {
         path: p.path,
         count: p._count.path
       })),
-      trend
+      trend,
+      latestVisits
     })
   } catch (error) {
     console.error('Stats API error:', error)
