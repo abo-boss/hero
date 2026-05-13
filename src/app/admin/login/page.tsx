@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-
-const FALLBACK_EMAIL = 'cxbyy129@126.com'
-const FALLBACK_PASSWORD = 'cxb63607'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -20,10 +18,17 @@ export default function LoginPage() {
     setError('')
 
     try {
-      if (email === FALLBACK_EMAIL && password === FALLBACK_PASSWORD) {
-        router.push('/admin')
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('邮箱或密码错误')
       } else {
-        setError('邮箱或密码无效')
+        router.push('/admin')
+        router.refresh()
       }
     } catch (error) {
       setError('发生错误，请重试。')

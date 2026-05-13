@@ -54,10 +54,8 @@ export const authOptions: NextAuthOptions = {
           // Ignore DB errors and fall back to hardcoded admin
         }
 
-        if (
-          (credentials.email === FALLBACK_EMAIL && credentials.password === FALLBACK_PASSWORD) ||
-          (credentials.email === "admin@example.com" && credentials.password === "password123")
-        ) {
+        // 只允许指定的管理员账号登录
+        if (credentials.email === FALLBACK_EMAIL && credentials.password === FALLBACK_PASSWORD) {
           return {
             id: "admin-fallback",
             email: credentials.email,

@@ -3,7 +3,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'web网站管理系统',
+  title: 'web 网站管理系统',
 }
 
 export default function AdminLayout({

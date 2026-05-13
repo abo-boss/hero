@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.105.4",
     "@types/he": "^1.2.3",
     "@vercel/blob": "^2.0.0",
     "axios": "^1.13.2",
