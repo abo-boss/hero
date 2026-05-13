@@ -87,11 +87,33 @@ export async function GET() {
       .sort((a, b) => a.date.localeCompare(b.date))
 
     // 7. 最近 20 条访问记录
-    const { data: latestVisits } = await supabase
-      .from('Visit')
-      .select('id, path, ip, country, province, city, createdAt, userAgent')
-      .order('createdAt', { ascending: false })
-      .limit(20)
+    // 注意：如果 province 字段不存在，先查询不含 province 的数据
+    let latestVisits = []
+    try {
+      const { data, error } = await supabase
+        .from('Visit')
+        .select('id, path, ip, country, province, city, createdAt, userAgent')
+        .order('createdAt', { ascending: false })
+        .limit(20)
+      
+      if (error) {
+        // 如果 province 字段不存在，尝试不带 province 的查询
+        if (error.message.includes('province')) {
+          const { data: fallbackData } = await supabase
+            .from('Visit')
+            .select('id, path, ip, country, city, createdAt, userAgent')
+            .order('createdAt', { ascending: false })
+            .limit(20)
+          latestVisits = fallbackData || []
+        } else {
+          console.error('Failed to fetch latest visits:', error)
+        }
+      } else {
+        latestVisits = data || []
+      }
+    } catch (error) {
+      console.error('Latest visits fetch error:', error)
+    }
 
     return NextResponse.json({
       summary: {

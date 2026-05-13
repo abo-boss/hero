@@ -72,8 +72,24 @@ export function RecentVisits({ visits }: { visits: Visit[] }) {
 
               const country = visit.country ? (COUNTRY_MAP[visit.country] || visit.country) : ''
               const province = visit.province || ''
-              // 优先显示省份，如果没有省份则显示城市
-              const location = [country, province, city].filter(Boolean).join(' ') || '-'
+              
+              // 显示逻辑优化：
+              // 1. 如果有省份信息，优先显示省份（IPAPI 提供，更精确）
+              // 2. 否则显示城市（Vercel 提供）
+              // 3. 如果都没有，显示 "-"
+              let location = ''
+              if (province) {
+                // IPAPI 提供的省份信息，通常更可靠
+                location = country ? `${country} ${province}` : province
+              } else if (city && city !== 'unknown') {
+                // Vercel 提供的城市信息
+                location = country ? `${country} ${city}` : city
+              } else if (country) {
+                // 只有国家信息
+                location = country
+              } else {
+                location = '-'
+              }
               
               return (
                 <tr key={visit.id} className="group hover:bg-slate-50 transition-colors">
