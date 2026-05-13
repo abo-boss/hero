@@ -57,7 +57,9 @@ export function RecentVisits({ visits }: { visits: Visit[] }) {
           <tbody className="divide-y divide-slate-50 text-sm">
             {visits.map((visit) => {
               const date = new Date(visit.createdAt)
+              // 强制转换为中国时区 (Asia/Shanghai, UTC+8)
               const timeStr = date.toLocaleString('zh-CN', {
+                timeZone: 'Asia/Shanghai',
                 month: '2-digit',
                 day: '2-digit',
                 hour: '2-digit',
