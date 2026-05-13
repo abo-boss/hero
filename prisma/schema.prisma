@@ -69,6 +69,7 @@ model Visit {
   userAgent String?  // 浏览器信息
   referer   String?  // 来源
   country   String?  // 国家（Vercel 提供）
+  province  String?  // 省份/州（IPAPI 提供）
   city      String?  // 城市（Vercel 提供）
   createdAt DateTime @default(now())
 

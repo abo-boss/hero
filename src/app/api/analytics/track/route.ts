@@ -29,6 +29,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, skipped: true })
     }
 
+    // 使用 IPAPI 获取更精确的地理位置（包括省份）
+    let province = ''
+    if (ip !== 'unknown' && !ip.includes('localhost')) {
+      try {
+        const response = await fetch(`http://ip-api.com/json/${ip}?lang=zh-CN`, {
+          headers: { 'Accept': 'application/json' }
+        })
+        const data = await response.json()
+        if (data.status === 'success') {
+          province = data.regionName || ''
+        }
+      } catch (error) {
+        console.warn('IPAPI lookup failed:', error)
+      }
+    }
+
     // 异步写入数据库，不阻塞响应
     await (prisma as any).visit.create({
       data: {
@@ -37,6 +53,7 @@ export async function POST(request: Request) {
         userAgent,
         referer: referer || headersList.get('referer') || '',
         country,
+        province: province || null,
         city,
       }
     })

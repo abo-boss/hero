@@ -8,6 +8,7 @@ interface Visit {
   path: string
   ip: string
   country: string | null
+  province: string | null
   city: string | null
   createdAt: string
   userAgent: string | null
@@ -70,7 +71,9 @@ export function RecentVisits({ visits }: { visits: Visit[] }) {
               } catch (e) {}
 
               const country = visit.country ? (COUNTRY_MAP[visit.country] || visit.country) : ''
-              const location = [country, city].filter(Boolean).join(' ') || '-'
+              const province = visit.province || ''
+              // 优先显示省份，如果没有省份则显示城市
+              const location = [country, province, city].filter(Boolean).join(' ') || '-'
               
               return (
                 <tr key={visit.id} className="group hover:bg-slate-50 transition-colors">
