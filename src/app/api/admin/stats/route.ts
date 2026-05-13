@@ -88,7 +88,7 @@ export async function GET() {
 
     // 7. 最近 20 条访问记录
     // 注意：如果 province 字段不存在，先查询不含 province 的数据
-    let latestVisits = []
+    let latestVisits: any[] = []
     try {
       const { data, error } = await supabase
         .from('Visit')
